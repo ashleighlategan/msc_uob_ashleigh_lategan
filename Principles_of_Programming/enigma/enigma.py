@@ -1,6 +1,10 @@
 
 class PlugLead:
-    def __init__(self, mapping):
+    def __init__(self, mapping: str) -> None: 
+        """
+        A single plug lead that connects two letters on a plugboard.
+        :param mapping: A 2 character string for the 2 letters that connect e.g. AG 
+        """
         if len(mapping) != 2:
             raise ValueError ("A plug lead can only connect 2 characters")
         if mapping[0] == mapping[1]:
@@ -9,7 +13,12 @@ class PlugLead:
             raise ValueError("Plug lead mappings are only for letters.")
         self.mapping = mapping.upper()
  
-    def encode(self, character):
+    def encode(self, character:str) -> str:
+        """
+        Single letter encoding via this lead.
+        If it is connected to another letter that letter is returned, else the character is unchanged.
+        :param character: Single letter to possibly encode 
+        """
         character = character.upper()
         if character == self.mapping[0]:
             return self.mapping[1]
@@ -20,7 +29,46 @@ class PlugLead:
 
 
 class Plugboard:
-    pass
+    TOTAL_LEADS = 10
+    
+    def __init__(self) -> None:
+        """
+        Represents the plugboard which can have a maximum of 10 PlugLead objects.
+        """
+        self.leads =[]          # empty list to start, leads get added via add()
+    
+    def add(self, lead: PlugLead) -> None:
+        """
+        Add another PlugLead to the plugboard.
+        :param lead: PlugLead object to add
+        """
+        if len(self.leads) >= self.TOTAL_LEADS:
+            raise ValueError("Plugboard can't have more than 10 leads.")
+        
+        # Check that the letters are not already being used:
+        used_letters = set()                                # Gather every letter already used by existing leads into a set
+        for used_lead in self.leads:
+            used_letters.add(used_lead.mapping[0])
+            used_letters.add(used_lead.mapping[1])
+        
+        for letter in lead.mapping:
+            if letter in used_letters:
+                raise ValueError(f"The {letter} is already connected to another plug.")
+        
+        self.leads.append(lead)         # a lead is only added if all checks pass
+    
+    def encode(self, character: str) -> str:
+        """
+        Passes a character to the plugboard and checks with each PlugLead one by one.
+        Returns character unchanged if it is not part of a lead. 
+        :param character: Single letter to possibly encode 
+        """
+        character = character.upper()
+        for lead in self.leads:
+            output = lead.encode(character)
+            if output != character:
+                return output
+        return character              # character is unchanged if no lead is connected to it
 
 
 # You will need to write more classes, which can be done here or in separate files, you choose.
@@ -72,3 +120,40 @@ if __name__ == "__main__":
         pass
 
     print("All PlugLead tests passed!")
+
+    # TESTING THE PLUGBOARD:
+    # ---------------------------------------------
+    plugboard = Plugboard()
+    plugboard.add(PlugLead("FJ"))
+    plugboard.add(PlugLead("KN"))
+
+    # Basic encoding both ways
+    assert plugboard.encode("F") == "J"
+    assert plugboard.encode("J") == "F"
+    assert plugboard.encode("K") == "N"
+    assert plugboard.encode("N") == "K"
+
+    # Unconnected letter passes through unchanged
+    assert plugboard.encode("Z") == "Z"
+
+    # Lowercase input should still work
+    assert plugboard.encode("f") == "J"
+
+    # Duplicate letter should raise an error
+    try:
+        plugboard.add(PlugLead("FX"))  # F is already used
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+    # Too many leads should raise an error
+    pb = Plugboard()
+    for plugs in ["AB", "CD", "EF", "GH", "IJ", "KL", "MN", "OP", "QR", "ST"]:
+        pb.add(PlugLead(plugs))
+    try:
+        pb.add(PlugLead("UV"))
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+    print("All Plugboard tests passed!")
