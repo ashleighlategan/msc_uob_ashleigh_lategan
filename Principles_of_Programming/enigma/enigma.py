@@ -35,7 +35,7 @@ class Plugboard:
         """
         Represents the plugboard which can have a maximum of 10 PlugLead objects.
         """
-        self.leads =[]          # empty list to start, leads get added via add()
+        self.leads: list[PlugLead] =[]          # empty list to start, leads get added via add()
     
     def add(self, lead: PlugLead) -> None:
         """
@@ -70,7 +70,7 @@ class Plugboard:
                 return output
         return character              # character is unchanged if no lead is connected to it
     
-    # Wiring patterns: index = input letter (A=0) and value = output letter 
+# Enigma Machine Constants: alphabet, rotor and reflector wiring settings, and notch positions for each rotor. 
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
@@ -111,7 +111,7 @@ class Rotor:
         :param ring setting: Ring setting 1-26 (default 1 (no-offset))
         """
         if name not in ROTOR_WIRING:
-            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-IV.")
+            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-V.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
         self.position = ALPHABET.index(position.upper())              # converts to int, 0-25
@@ -164,8 +164,111 @@ class Reflector:
     def encode(self, character: str) -> str:
         return self.wiring[ALPHABET.index(character.upper())]
                                            
-        
+class EnigmaMachine:  
+    """
+    A complete Enigma machine demonstration with the plugboard, rotors and a reflector.
 
+    Rotors are given left-to-right, as you would see looking at the machine 
+    e.g ["I", "II", "III"]where III is the rightmost rotor. 
+    The electrical signal moves right-to-left through the rotors, hits the reflector 
+    and then moves back left-to-right through the rotors.
+
+    Rotation(s) following a keypress:
+    1. The rightmost rotor always steps.
+    2. If the rightmost is at its notch, the middle rotor will also step.
+    3. If the middle rotor is at its notch, it steps again (double-step) and triggers the next rotor to also step.
+    Note: In a 4-rotor machine, the leftmost rotor never steps. 
+    """   
+    def __init__(self, 
+                 rotor_names: list[str],
+                 reflector_name: str,
+                 ring_settings: list[int],
+                 starting_positions: str,
+                 plugboard_pairs: list[str] | None = None,
+                 ) -> None:
+        """
+        :param rotor_names: Left-to-right rotor names e.g. ["Beta", "III", "V"]
+        :param reflector_name: Reflector name: "A", "B" or "C"
+        :param ring_settings: Ring settings 1 to 26 for the rotors from left to right
+        :param starting_positions: Starting position as letters, for each rotor e.g. "AAZ"
+        :param plugboard_pairs: Optional list of 2-char plug pairs e.g ["CT", "EZ"]
+        """
+        if len(rotor_names) not in (3,4):
+            raise ValueError("Enigma machines require 3 or 4 rotors.")
+        if len(ring_settings) != len(rotor_names):
+            raise ValueError("Need to supply ring setting for each rotor.")
+        if len(starting_positions) != len(rotor_names):
+            raise ValueError("Need to supply starting position for each rotor.")
+        
+        self.rotors = [ 
+            Rotor(name, pos, ring_set)
+            for name, pos, ring_set in zip(rotor_names, starting_positions, ring_settings)
+        ]
+
+        self.reflector = Reflector(reflector_name)
+
+        self.plugboard = Plugboard()
+        for pair in (plugboard_pairs or []):
+            self.plugboard.add(PlugLead(pair))
+    
+    def _step_rotors(self) -> None:
+        """
+        Advance the rotors according to the stepping mechanism.
+        Called once ahead of each character being encoded. 
+        """
+
+        n = len(self.rotors)
+        step = [False] * n                                      # one entry per rotor, tracks which rotors should step on this keypress
+        step[-1] = True                                         # rightmost rotor always steps
+
+        if n >= 2: 
+            if self.rotors[-1].reached_notch():
+                step[-2] = True                                 # rightmost rotor at notch, triggers next rotor to step                   
+            if self.rotors[-2].reached_notch():
+                step[-2] = True                                 # double-step
+                if n >= 3:
+                    step[-3] = True                             # triggers step of 3rd rotor (this is the leftmost rotor that can step)
+        
+        for i, to_step in enumerate(step):
+            if to_step:
+                self.rotors[i].rotate() 
+
+    def encode_character(self, character: str) -> str:
+        """
+        Encodes a single character using the Enigma machine:
+        plugboard -> rotors (right to left) -> reflector -> rotors (left to right) -> plugboard
+        Rotors will step before the signal passes through them. 
+
+        :param character: An uppercase or lowercase letter
+        : return: Encoded uppercase letter
+        """
+
+        character = character.upper()
+        if character not in ALPHABET:
+            raise ValueError(f"Character '{character}' is not a valid alphabetical letter A-Z.")
+        
+        self._step_rotors()
+
+        signal = self.plugboard.encode(character)
+
+        for rotor in reversed(self.rotors):                     # right to left
+            signal = rotor.encode_right_to_left(signal)
+
+        signal = self.reflector.encode(signal)                  # reflector
+
+        for rotor in self.rotors:                               # left to right
+            signal = rotor.encode_left_to_right(signal)
+
+        return self.plugboard.encode(signal) 
+
+    def encode_string(self, text:str) -> str:
+        """
+        Encode a string of characters, still advancing the relevant rotors with each keypress. 
+        
+        :param text: Encrypted or decrypted text (alphabetical letters of any case)
+        : return: Encoded or decoded uppercase text
+        """
+        return "".join(self.encode_character(c) for c in text.upper() if c in ALPHABET)
 
 # You will need to write more classes, which can be done here or in separate files, you choose.
 
