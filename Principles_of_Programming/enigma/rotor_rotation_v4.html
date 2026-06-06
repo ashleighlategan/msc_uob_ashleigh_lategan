@@ -1,0 +1,192 @@
+
+<style>
+  h2.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .controls{display:flex;gap:10px;margin-bottom:8px}
+  button{font-size:13px;padding:6px 16px;cursor:pointer;border-radius:6px}
+  .info-row{display:flex;gap:10px;margin-top:8px;flex-wrap:wrap}
+  .badge{font-size:12px;padding:4px 12px;border-radius:6px;font-weight:500}
+  .b-gray  {background:#2e2e2e;color:#D3D1C7;border:1px solid #444}
+  .b-amber {background:#633806;color:#FAC775}
+  .b-purple{background:#3C3489;color:#CECBF6}
+  .b-teal  {background:#085041;color:#9FE1CB}
+  .exp{font-size:13px;color:var(--color-text-secondary);margin-top:6px;line-height:1.6;min-height:36px}
+  .hl{color:var(--color-text-primary);font-weight:500}
+  .frames{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+  .frame{border-radius:6px;padding:10px 14px;font-size:12px;line-height:1.6}
+  .frame-drum   {background:#1e1a3a;border-left:3px solid #534AB7;color:#CECBF6}
+  .frame-housing{background:#0d2420;border-left:3px solid #0F6E56;color:#9FE1CB}
+  .frame-title  {font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:4px;opacity:0.8}
+  .steps{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+  .step{border-radius:6px;padding:8px 12px;font-size:12px;line-height:1.6}
+  .step-1{background:#1e1a3a;border-top:2px solid #534AB7}
+  .step-2{background:#0d2420;border-top:2px solid #0F6E56}
+  .step-3{background:#2a1f0e;border-top:2px solid #854F0B}
+  .step-num{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;opacity:0.7;margin-bottom:3px}
+  .step-1 .step-num{color:#7F77DD}
+  .step-2 .step-num{color:#1D9E75}
+  .step-3 .step-num{color:#BA7517}
+  .step-code{font-family:monospace;font-size:12px;margin-bottom:3px}
+  .step-1 .step-code{color:#CECBF6}
+  .step-2 .step-code{color:#9FE1CB}
+  .step-3 .step-code{color:#FAC775}
+  .step-desc{font-size:11px;color:var(--color-text-secondary)}
+  .insight{margin-top:10px;background:var(--color-background-secondary);border:1px solid var(--color-border-secondary);border-left:3px solid #FAC775;border-radius:6px;padding:10px 14px;font-size:12px;color:var(--color-text-secondary);line-height:1.6}
+  .insight span{color:var(--color-text-primary);font-weight:500}
+</style>
+<h2 class="sr-only">Enigma rotor rotation — two coordinate systems</h2>
+
+<div class="controls">
+  <button onclick="rotate(1)">Rotate III ↑</button>
+  <button onclick="rotate(-1)">Rotate III ↓</button>
+  <button onclick="reset()">Reset</button>
+</div>
+<div class="info-row">
+  <span class="badge b-gray">Position: <span id="lbl-pos">A</span></span>
+  <span class="badge b-amber">Input: A (row 0)</span>
+  <span class="badge b-purple">Wire exits drum: <span id="lbl-exits">B</span></span>
+  <span class="badge b-teal">Rotor II sees: <span id="lbl-sees">B</span></span>
+</div>
+<div class="exp" id="exp"></div>
+
+<svg width="100%" viewBox="0 0 640 310" id="svg">
+<defs>
+  <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M2 1L8 5L2 9" fill="none" stroke="context-stroke" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+  </marker>
+</defs>
+<rect x="120" y="15" width="180" height="280" rx="8" fill="#3C3489" stroke="#534AB7" stroke-width="0.5"/>
+<text x="210" y="10" text-anchor="middle" font-size="12" font-family="system-ui" fill="#CECBF6">Rotor III (moves)</text>
+<rect x="360" y="15" width="150" height="280" rx="8" fill="#085041" stroke="#0F6E56" stroke-width="0.5"/>
+<text x="435" y="10" text-anchor="middle" font-size="12" font-family="system-ui" fill="#9FE1CB">Rotor II (fixed)</text>
+<line x1="302" y1="15" x2="302" y2="295" stroke="#555" stroke-width="0.5" stroke-dasharray="3 3"/>
+<line x1="358" y1="15" x2="358" y2="295" stroke="#555" stroke-width="0.5" stroke-dasharray="3 3"/>
+<g id="g-drum"></g>
+<g id="g-r2"></g>
+<g id="g-sig"></g>
+<line id="in-arr" x1="50" y1="42" x2="118" y2="42" stroke="#EF9F27" stroke-width="2" marker-end="url(#arr)"/>
+<text id="in-lbl" x="38" y="46" text-anchor="middle" font-size="13" font-family="system-ui" fill="#EF9F27" font-weight="600">A</text>
+</svg>
+
+<!-- TWO COORDINATE SYSTEMS -->
+<div class="frames">
+  <div class="frame frame-drum">
+    <div class="frame-title">Frame 1 — the drum</div>
+    The wiring lives here. Pin B always connects to contact D — soldered inside, never changes. When you rotate, this whole frame moves.
+  </div>
+  <div class="frame frame-housing">
+    <div class="frame-title">Frame 2 — the housing</div>
+    The outside world. The next rotor speaks this language. A is always A, fixed in space. The drum rotates inside it.
+  </div>
+</div>
+
+<div class="steps">
+  <div class="step step-1">
+    <div class="step-num">Step 1 — enter drum</div>
+    <div class="step-code">(input + offset) % 26</div>
+    <div class="step-desc">Translate from housing into the drum's frame. Housing row A lines up with drum row <em>offset</em>.</div>
+  </div>
+  <div class="step step-2">
+    <div class="step-num">Step 2 — read wiring</div>
+    <div class="step-code">wiring[pin_index]</div>
+    <div class="step-desc">Purely inside the drum. No offset here — just follow the wire.</div>
+  </div>
+  <div class="step step-3">
+    <div class="step-num">Step 3 — exit drum</div>
+    <div class="step-code">(wire_out - offset) % 26</div>
+    <div class="step-desc">Translate back to housing. Subtract the same offset to get what Rotor II actually sees.</div>
+  </div>
+</div>
+
+<div class="insight">
+  <span>+offset and −offset are not two separate corrections.</span> They are the same rotation seen from opposite ends of the drum — you shift in to enter the drum's world, and shift back out to return to the housing's world.
+</div>
+
+<script>
+const ABC='ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const W3='BDFHJLCPRTXVZNYEIWGAKMUSQO';
+const NS='http://www.w3.org/2000/svg';
+const ROWS=8,ROW_H=34,ROW0_Y=42;
+const PIN_X=145,WL=162,WR=285,CONT_X=295,R2_X=375;
+let offset=0;
+
+function rowY(r){return ROW0_Y+r*ROW_H}
+function mkEl(tag,attrs){const e=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))e.setAttribute(k,v);return e}
+function mkTxt(x,y,str,fill,bold){const t=document.createElementNS(NS,'text');t.setAttribute('x',x);t.setAttribute('y',y+4);t.setAttribute('text-anchor','middle');t.setAttribute('font-size','12');t.setAttribute('font-family','system-ui');t.setAttribute('fill',fill||'#CECBF6');if(bold)t.setAttribute('font-weight','600');t.textContent=str;return t}
+
+function draw(){
+  ['g-drum','g-r2','g-sig'].forEach(id=>document.getElementById(id).innerHTML='');
+  const gd=document.getElementById('g-drum');
+  const gr=document.getElementById('g-r2');
+  const gs=document.getElementById('g-sig');
+
+  const drumPinIdx=offset;
+  const wireOutLetter=W3[drumPinIdx];
+  const wireOutIdx=ABC.indexOf(wireOutLetter);
+  const contactHousingRow=(wireOutIdx-offset+26)%26;
+  const r2Letter=ABC[contactHousingRow];
+
+  document.getElementById('lbl-pos').textContent=ABC[offset%26];
+  document.getElementById('lbl-exits').textContent=wireOutLetter;
+  document.getElementById('lbl-sees').textContent=r2Letter;
+
+  const exp=document.getElementById('exp');
+  if(offset===0){
+    exp.innerHTML=`No rotation — frames are aligned. Pin <span class="hl">A</span> → wiring[0] = <span class="hl">${wireOutLetter}</span>. Contact ${wireOutLetter} sits at housing row ${wireOutIdx}, so Rotor II sees <span class="hl">${r2Letter}</span>.`;
+  } else {
+    exp.innerHTML=`Offset ${offset}: housing row 0 aligns with drum pin <span class="hl">${ABC[drumPinIdx]}</span> → wiring[${drumPinIdx}] = <span class="hl">${wireOutLetter}</span>. That contact is now ${offset} row${offset>1?'s':''} out of step, so Rotor II sees <span class="hl">${r2Letter}</span> not ${wireOutLetter}.`;
+  }
+
+  for(let r=0;r<ROWS;r++){
+    const y=rowY(r);
+    const drumPinLabel=ABC[(r+offset)%26];
+    const drumPinLabelIdx=(r+offset)%26;
+    const wireTarget=W3[drumPinLabelIdx];
+    const wireTargetIdx=ABC.indexOf(wireTarget);
+    const wireTargetHRow=(wireTargetIdx-offset+26)%26;
+    const isSignalRow=(r===0);
+
+    gd.appendChild(mkTxt(PIN_X,y,drumPinLabel,isSignalRow?'#EF9F27':'#CECBF6',isSignalRow));
+
+    if(wireTargetHRow<ROWS){
+      gd.appendChild(mkTxt(CONT_X,rowY(wireTargetHRow),wireTarget,isSignalRow?'#EF9F27':'#CECBF6',isSignalRow));
+      gd.appendChild(mkEl('line',{x1:WL,y1:y,x2:WR,y2:rowY(wireTargetHRow),stroke:isSignalRow?'#EF9F27':'#534AB7','stroke-width':isSignalRow?'2':'0.5',opacity:isSignalRow?'1':'0.2'}));
+    }
+  }
+
+  for(let r=0;r<ROWS;r++){
+    const isTarget=(r===contactHousingRow&&contactHousingRow<ROWS);
+    gr.appendChild(mkTxt(R2_X+10,rowY(r),ABC[r],isTarget?'#EF9F27':'#9FE1CB',isTarget));
+  }
+
+  if(contactHousingRow<ROWS){
+    const sy=rowY(contactHousingRow);
+    gs.appendChild(mkEl('line',{x1:CONT_X+10,y1:sy,x2:R2_X+2,y2:sy,stroke:'#EF9F27','stroke-width':'2.5','marker-end':'url(#arr)'}));
+
+    if(offset>0&&wireOutIdx<ROWS&&wireOutIdx!==contactHousingRow){
+      const ghostY=rowY(wireOutIdx);
+      gs.appendChild(mkEl('line',{x1:CONT_X+10,y1:ghostY,x2:R2_X+2,y2:ghostY,stroke:'#888','stroke-width':'1','stroke-dasharray':'3 3'}));
+      const gl=document.createElementNS(NS,'text');
+      gl.setAttribute('x',R2_X+8);gl.setAttribute('y',ghostY+4);
+      gl.setAttribute('font-size','11');gl.setAttribute('font-family','system-ui');
+      gl.setAttribute('fill','#888');gl.textContent=`"${wireOutLetter}" in drum frame`;
+      gs.appendChild(gl);
+      const bx=R2_X-14;
+      gs.appendChild(mkEl('path',{d:`M${bx} ${ghostY} L${bx+6} ${ghostY} L${bx+6} ${sy} L${bx} ${sy}`,fill:'none',stroke:'#9FE1CB','stroke-width':'1.5'}));
+      const gl2=document.createElementNS(NS,'text');
+      gl2.setAttribute('x',bx+18);gl2.setAttribute('y',(ghostY+sy)/2+4);
+      gl2.setAttribute('font-size','12');gl2.setAttribute('font-family','system-ui');
+      gl2.setAttribute('fill','#9FE1CB');gl2.setAttribute('font-weight','600');
+      gl2.textContent=`−${offset}`;
+      gs.appendChild(gl2);
+    }
+  }
+
+  document.getElementById('in-arr').setAttribute('y1',rowY(0));
+  document.getElementById('in-arr').setAttribute('y2',rowY(0));
+  document.getElementById('in-lbl').setAttribute('y',rowY(0)+4);
+}
+
+function rotate(d){offset=Math.max(0,Math.min(4,offset+d));draw()}
+function reset(){offset=0;draw()}
+draw();
+</script>
