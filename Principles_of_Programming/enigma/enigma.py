@@ -86,19 +86,76 @@ ROTOR_WIRING = {
     "B":     "YRUHQSLDPXNGOKMIEBFZCWVJAT", 
     "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",  
 }
+
+# Notch positions for rotors I to V (when rotor is at its notch, the next keypress triggers the rotor to its left)
+ROTOR_NOTCH = {"I": "Q", "II": "E", "III": "V", "IV": "J", "V": "Z"}
     
 class Rotor:
-    def __init__(self,name):
-        self.wiring= ROTOR_WIRING[name]
+    """
+    One Enigma rotor with position, ring setting and possible turnover notch.
+
+    Position: visible letter shown on rotor window (0-25 integer)
+    Ring setting: shifts the internal wiring relative to external markings (1-26 integer)
+
+    Encoding formula:
+        shifted = (input_index + position - ring_offset) % 26
+        output = (wired_index - position + ring_offset) % 26
+    This adds the position offset on entry and reverses it on exit
+    and the ring offset shifts the wiring in th opposite direction.
+
+    """
+    def __init__(self, name: str, position: str = "A", ring_setting: int = 1) -> None:
+        """
+        :param name: Rotor name e.g. 'Gamma', 'III' 
+        :param position: Starting letter (defaults to 'A')
+        :param ring setting: Ring setting 1-26 (default 1 (no-offset))
+        """
+        if name not in ROTOR_WIRING:
+            raise ValueError(f"Unknown rotor name {name} used.")
+        self.name = name
+        self.wiring = ROTOR_WIRING[name]
+        self.position = ALPHABET.index(position.upper())              # converts to int, 0-25
+        self.ring_offset = ring_setting -1                            # converts from 1-26 to 0-25
+        self.notch = ROTOR_NOTCH.get(name)
     
-    def encode_right_to_left(self,character):               
-        return self.wiring[ALPHABET.index(character.upper())]          # matches input character to alphabetical character position, passes this to wiring
+    def reached_notch(self) -> bool:
+        """ True if the rotor is currently at its turnover notch position """
+        return self.notch is not None and ALPHABET[self.position] == self.notch
     
-    def encode_left_to_right(self, character):
-        return ALPHABET[self.wiring.index(character.upper())]
+    def rotate(self) -> None:
+        """ Rotate the rotor by one position (triggered by key press) """
+        self.position = (self.position + 1) % 26
     
-def rotor_from_name(name):                                              # simplification for users, can call rotor_from_name("I") instead of Rotor("I")
-    return Rotor(name)                                                 
+    def encode_right_to_left(self, character: str) -> str:   
+        """ Encode input character passing from the rightmost rotor to the leftmost rotor (towards reflector) """
+        alpha_idx = ALPHABET.index(character.upper())
+        shifted = (alpha_idx + self.position - self.ring_offset) % 26
+        wired = ALPHABET.index(self.wiring[shifted])
+        output = (wired - self.position + self.ring_offset) % 26
+        return ALPHABET[output]  
+    
+    def encode_left_to_right(self, character: str) -> str:
+        """ Encode input character passing from the leftmost rotor to the rightmost rotor (away from reflector)"""
+        alpha_idx = ALPHABET.index(character.upper())
+        shifted = (alpha_idx + self.position - self.ring_offset) % 26
+        wired = self.wiring.index(ALPHABET[shifted])
+        output = (wired - self.position + self.ring_offset) % 26
+        return ALPHABET[output]
+
+def rotor_from_name(name:str) -> Rotor:        
+    """ Function creates a rotor from name, with default position and ring setting"""                                      
+    return Rotor(name)             
+
+class Reflector:
+    """
+    The Enigma reflector: a fixed substitution where each letter maps
+    to a different letter AND the mapping is self-inverse (A->Y means Y->A). 
+
+    This is what ensures encryption and decryption use the same keypress:
+    pressing A can never encrypt to A (the machine could never encrypt a
+    letter as itself).
+    """
+                                         
         
 
 
