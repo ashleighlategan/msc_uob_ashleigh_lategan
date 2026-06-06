@@ -69,6 +69,37 @@ class Plugboard:
             if output != character:
                 return output
         return character              # character is unchanged if no lead is connected to it
+    
+    # Wiring patterns: index = input letter (A=0) and value = output letter 
+
+ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+ROTOR_WIRING = {
+    "Beta":  "LEYJVCNIXWPBQMDRTAKZGFUHOS", # Rotors Beta, Gamma and I-V
+    "Gamma": "FSOKANUERHMBTIYCWLQPZXVGJD",
+    "I":     "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
+    "II":    "AJDKSIRUXBLHWTMCQGZNPYFVOE",
+    "III":   "BDFHJLCPRTXVZNYEIWGAKMUSQO",
+    "IV":    "ESOVPZJAYQUIRHXLNFTGKDCMWB",
+    "V":     "VZBRGITYUPSDNHLXAWMJQOFECK",
+    "A":     "EJMZALYXVBWFCRQUONTSPIKHGD",  # reflector A, B, C
+    "B":     "YRUHQSLDPXNGOKMIEBFZCWVJAT", 
+    "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",  
+}
+    
+class Rotor:
+    def __init__(self,name):
+        self.wiring= ROTOR_WIRING[name]
+    
+    def encode_right_to_left(self,character):               
+        return self.wiring[ALPHABET.index(character.upper())]          # matches input character to alphabetical character position, passes this to wiring
+    
+    def encode_left_to_right(self, character):
+        return ALPHABET[self.wiring.index(character.upper())]
+    
+def rotor_from_name(name):                                              # simplification for users, can call rotor_from_name("I") instead of Rotor("I")
+    return Rotor(name)                                                 
+        
 
 
 # You will need to write more classes, which can be done here or in separate files, you choose.
