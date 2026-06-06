@@ -111,7 +111,7 @@ class Rotor:
         :param ring setting: Ring setting 1-26 (default 1 (no-offset))
         """
         if name not in ROTOR_WIRING:
-            raise ValueError(f"Unknown rotor name {name} used.")
+            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-IV.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
         self.position = ALPHABET.index(position.upper())              # converts to int, 0-25
@@ -155,7 +155,15 @@ class Reflector:
     pressing A can never encrypt to A (the machine could never encrypt a
     letter as itself).
     """
-                                         
+    def __init__(self, name:str) -> None:
+        if name not in ("A", "B", "C"):
+            raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
+        self.name = name
+        self.wiring = ROTOR_WIRING[name]
+    
+    def encode(self, character: str) -> str:
+        return self.wiring[ALPHABET.index(character.upper())]
+                                           
         
 
 
