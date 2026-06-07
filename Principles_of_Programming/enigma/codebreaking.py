@@ -1,4 +1,5 @@
 from enigma import EnigmaMachine, REFLECTOR_NAMES, ALPHABET
+from itertools import permutations, product
 
 def solution_code_1():
     crib = 'SECRETS'
@@ -46,12 +47,36 @@ def solution_code_3():
     crib = 'THOUSANDS'
     code_text = 'ABSKJAKKMRITTNYURBJFWQGRSGNNYJSDRYLAPQWIAGKJYEPCTAGDCTHLCDRZRFZHKNRSDLNPFPEBVESHPY'
     valid_rotor_names = ['Beta', 'Gamma', 'II', 'IV']
-    valid_ring_settings = [2, 4, 6, 8, 22, 24, 26]
+    valid_ring_settings = [2, 4, 6, 8, 20, 22, 24, 26]
+    crib_matches = []       # empty list to store any outputs that contain the crib
 
+    for rotors_used in permutations(valid_rotor_names, 3):
+        for reflector_used in REFLECTOR_NAMES:
+            for ring_settings_used in product(valid_ring_settings, repeat=3):
+                enigma_machine = EnigmaMachine(
+                    rotor_names = list(rotors_used),
+                    reflector_name = reflector_used,
+                    ring_settings= list(ring_settings_used),
+                    starting_positions = "EMY",
+                    plugboard_pairs = ["FH", "TS", "BE", "UQ", "KD", "AL"],
+                    )
+                output = enigma_machine.encode_string(code_text)
+                if crib in output:
+                    crib_matches.append({
+                        "rotor_names": rotors_used, 
+                        "reflector name": reflector_used, 
+                        "ring_settings": ring_settings_used,
+                        "output": output
+                        })
+    for match in crib_matches:
+        print(f"""Code 3 rotors: {match['rotor_names']}, reflector: {match['reflector name']},
+              ring settings: {match['ring_settings']}, Decoded text: {match['output']}""")
+    return crib_matches
 
 if __name__ == "__main__":
     solution_code_1()
     solution_code_2()
+    solution_code_3()
 
 
         
