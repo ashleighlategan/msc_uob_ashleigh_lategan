@@ -18,6 +18,9 @@ def solution_code_1():
         if crib in output:
             print(f"Code 1, uses Reflector: {reflector}, Decoded text is: {output}")
 
+def solution_code_2():
+    
+
 if __name__ == "__main__":
     solution_code_1()
 

@@ -567,7 +567,7 @@ if __name__ == "__main__":
     assert repr(Reflector("C")) == "Reflector('C')"
 
     # EnigmaMachine
-    assert repr(EnigmaMachine(["II", "V", "Gamma"], "C", [2,1,1], "AAZ"))
+    assert repr(EnigmaMachine(["Gamma", "V", "I"], "C", [2,1,1], "AAZ"))
 
     print("All __repr__ tests have passed!")
 
