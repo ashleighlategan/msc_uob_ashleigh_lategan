@@ -21,7 +21,6 @@ class PlugLead:
 
         :param character: Single letter to possibly encode 
         :return: The character it is connected to, if it is connected via this lead, otherwise the character is unchanged.
-
         """
         character = character.upper()
         if character == self.mapping[0]:
@@ -37,11 +36,10 @@ class Plugboard:
     
     def __init__(self) -> None:
         """
-        Represents the plugboard which can have a maximum of 10 PlugLead objects.
+        Represents the plugboard which can have a maximum of 10 plug leads.
 
         Maintains a precomputed bidirectional dictionary for O(1) letter lookup.
         """ 
-        self.leads: list[PlugLead] =[]          # empty list to start, leads get added via add()
         self._map: dict[str, str] = {}          # precomputed bidirectional dictionary of letter to connected letter, O(1) lookup
     
     def add(self, lead: PlugLead) -> None:
@@ -51,14 +49,12 @@ class Plugboard:
         :param lead: PlugLead object to add
         :raises ValueError: If the plugboard is already full or if the letter is already connected to another plug.
         """
-        if len(self.leads) >= self.TOTAL_LEADS:
+        if len(self._map) // 2 >= self.TOTAL_LEADS:
             raise ValueError("Plugboard can't have more than 10 leads.")
         
         for letter in lead.mapping:
-            if letter in self._map:                                                        # 0(1) check against existing dictionary                                      
+            if letter in self._map:                                                        # O(1) check against existing dictionary before mapping any letters                                     
                 raise ValueError(f"The {letter} is already connected to a plug.")
-        self.leads.append(lead)         # a lead is only added if all checks pass
-
         # Plugboard connections are bidirectional, need both mappings in dictionary
         self._map[lead.mapping[0]] = lead.mapping[1]
         self._map[lead.mapping[1]] = lead.mapping[0]
@@ -69,7 +65,7 @@ class Plugboard:
         """
         Encode a letter using the plugboard.
 
-        :param character: Single letter to possibly encode ]
+        :param character: Single letter to possibly encode.
         :return: The connected letter if it is part of a lead, else it returns the letter unchanged. 
         """
         return self._map.get(character.upper(), character.upper())
@@ -106,20 +102,20 @@ class Rotor:
         shifted = (input_index + position - ring_offset) % 26
         output = (wired_index - position + ring_offset) % 26
     This adds the position offset on entry and reverses it on exit
-    and the ring offset shifts the wiring in th opposite direction.
+    and the ring offset shifts the wiring in the opposite direction.
 
     """
     def __init__(self, name: str, position: str = "A", ring_setting: int = 1) -> None:
         """
         :param name: Rotor name e.g. 'Gamma', 'III' 
         :param position: Starting letter (defaults to 'A')
-        :param ring setting: Ring setting 1-26 (default 1 (no-offset))
+        :param ring_setting: Ring setting 1-26 (default 1 (no-offset))
         """
         if name not in ROTOR_WIRING:
             raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-V.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
-        self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # precomputed inverse, O(1) lookup for left-to right
+        self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # character to wiring index, O(1) lookup for the left-to-right flow
         self.position = ALPHA_TO_IDX[position.upper()]                  # converts to int, 0-25
         self.ring_offset = ring_setting -1                              # converts from 1-26 to 0-25
         self.notch = ROTOR_NOTCH.get(name)
@@ -162,12 +158,21 @@ class Reflector:
     letter as itself).
     """
     def __init__(self, name:str) -> None:
+        """
+        :param name: Reflector name: "A", "B" or "C"
+        :raises ValueError: If the name is not a valid reflector name,
+        """
         if name not in ("A", "B", "C"):
             raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
         self.name = name
         self.wiring = ROTOR_WIRING[name]
     
     def encode(self, character: str) -> str:
+        """ Encode input character through the reflector's wiring.
+        
+        :param character: Single uppercase or lowercase letter to encode.
+        :return: The matching letter based on its wiring.  
+        """
         return self.wiring[ALPHA_TO_IDX[character.upper()]]
                                            
 class EnigmaMachine:  
