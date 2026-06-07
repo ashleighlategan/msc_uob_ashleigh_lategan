@@ -3,21 +3,25 @@ class PlugLead:
     def __init__(self, mapping: str) -> None: 
         """
         A single plug lead that connects two letters on a plugboard.
-        :param mapping: A 2 character string for the 2 letters that connect e.g. AG 
+
+        :param mapping: A 2-character string for the 2 letters to connect bidirectionally e.g. 'AG' or 'GA' 
+        :raises ValueError: If the mapping is not only 2 characters, if they are non-alphabetic characters, or a letter tries to map to itself. 
         """
         if len(mapping) != 2:
             raise ValueError ("A plug lead can only connect 2 characters")
-        if mapping[0] == mapping[1]:
-            raise ValueError("A plug lead cannot map a letter to itself.")
         if not mapping.isalpha():
-            raise ValueError("Plug lead mappings are only for letters.")
+            raise ValueError("Plug lead mappings are only for alphabetical characters.")
+        if mapping[0].upper() == mapping[1].upper():                                        # cater for all cases
+            raise ValueError("A plug lead cannot map a letter to itself.")
         self.mapping = mapping.upper()
  
     def encode(self, character:str) -> str:
         """
         Single letter encoding via this lead.
-        If it is connected to another letter that letter is returned, else the character is unchanged.
+
         :param character: Single letter to possibly encode 
+        :return: The character it is connected to, if it is connected via this lead, otherwise the character is unchanged.
+
         """
         character = character.upper()
         if character == self.mapping[0]:
@@ -34,41 +38,41 @@ class Plugboard:
     def __init__(self) -> None:
         """
         Represents the plugboard which can have a maximum of 10 PlugLead objects.
-        """
+
+        Maintains a precomputed bidirectional dictionary for O(1) letter lookup.
+        """ 
         self.leads: list[PlugLead] =[]          # empty list to start, leads get added via add()
+        self._map: dict[str, str] = {}          # precomputed bidirectional dictionary, O(1) lookup
     
     def add(self, lead: PlugLead) -> None:
         """
-        Add another PlugLead to the plugboard.
+        Add another PlugLead to the plugboard and update the internal lookup dictionary.
+
         :param lead: PlugLead object to add
+        :raises ValueError: If the plugboard is already full or if the letter is already connected to another plug.
         """
         if len(self.leads) >= self.TOTAL_LEADS:
             raise ValueError("Plugboard can't have more than 10 leads.")
         
-        # Check that the letters are not already being used:
-        used_letters = set()                                # Gather every letter already used by existing leads into a set
-        for used_lead in self.leads:
-            used_letters.add(used_lead.mapping[0])
-            used_letters.add(used_lead.mapping[1])
-        
         for letter in lead.mapping:
-            if letter in used_letters:
+            if letter in self._map:                                                        # 0(1) check against existing dictionary                                      
                 raise ValueError(f"The {letter} is already connected to another plug.")
-        
         self.leads.append(lead)         # a lead is only added if all checks pass
-    
+
+        # Plugboard connections are bidirectional, need both mappings in dictionary
+        self._map[lead.mapping[0]] = lead.mapping[1]
+        self._map[lead.mapping[1]] = lead.mapping[0]
+
+
+
     def encode(self, character: str) -> str:
         """
-        Passes a character to the plugboard and checks with each PlugLead one by one.
-        Returns character unchanged if it is not part of a lead. 
-        :param character: Single letter to possibly encode 
+        Encode a letter using the plugboard.
+
+        :param character: Single letter to possibly encode ]
+        :return: The connected letter if it is part of a lead, else it returns the letter unchanged. 
         """
-        character = character.upper()
-        for lead in self.leads:
-            output = lead.encode(character)
-            if output != character:
-                return output
-        return character              # character is unchanged if no lead is connected to it
+        return self._map.get(character.upper(), character.upper())
     
 # Enigma Machine Constants: alphabet, rotor and reflector wiring settings, and notch positions for each rotor. 
 
