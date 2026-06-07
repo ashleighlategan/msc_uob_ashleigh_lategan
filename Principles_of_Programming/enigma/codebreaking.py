@@ -24,19 +24,19 @@ def solution_code_2():
     code_text = 'CMFSUPKNCBMUYEQVVDYKLRQZTPUFHSWWAKTUGXMPAMYAFITXIJKMH'
     crib_matches = []       # empty list to store any outputs that contain the crib
 
-    for r_1 in ALPHABET:
-        for r_2 in ALPHABET:
-            for r_3 in ALPHABET:
-                enigma_machine = EnigmaMachine(
-                    rotor_names = ["Beta","I","III"],
-                    reflector_name = "B",
-                    ring_settings= [23, 2, 10],
-                    starting_positions = r_1 + r_2 + r_3,
-                    plugboard_pairs = ["VH", "PT", "ZG", "BJ", "EY", "FS"],
-                    )
-                output = enigma_machine.encode_string(code_text)
-                if crib in output:
-                    crib_matches.append({"start_positions": r_1 + r_2 + r_3, "output": output})
+    for r_1, r_2, r_3 in product(ALPHABET, repeat=3):
+        enigma_machine = EnigmaMachine(
+            rotor_names = ["Beta","I","III"],
+            reflector_name = "B",
+            ring_settings= [23, 2, 10],
+            starting_positions = r_1 + r_2 + r_3,
+            plugboard_pairs = ["VH", "PT", "ZG", "BJ", "EY", "FS"],
+            )
+        
+        output = enigma_machine.encode_string(code_text)
+
+        if crib in output:
+            crib_matches.append({"start_positions": r_1 + r_2 + r_3, "output": output})
 
     for match in crib_matches:
         print(f"Code 2 start_positions: {match['start_positions']}, Decoded text: {match['output']}")
