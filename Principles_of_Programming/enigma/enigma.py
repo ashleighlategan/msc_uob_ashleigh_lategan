@@ -77,16 +77,17 @@ class Plugboard:
 # Enigma Machine Constants: alphabet, rotor and reflector wiring settings, and notch positions for each rotor. 
 
 ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+ALPHA_TO_IDX= {c: i for i, c in enumerate(ALPHABET)}    # O(1) alphabet character to index lookup
 
 ROTOR_WIRING = {
-    "Beta":  "LEYJVCNIXWPBQMDRTAKZGFUHOS", # Rotors Beta, Gamma and I-V
+    "Beta":  "LEYJVCNIXWPBQMDRTAKZGFUHOS",              # Rotors Beta, Gamma and I-V
     "Gamma": "FSOKANUERHMBTIYCWLQPZXVGJD",
     "I":     "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
     "II":    "AJDKSIRUXBLHWTMCQGZNPYFVOE",
     "III":   "BDFHJLCPRTXVZNYEIWGAKMUSQO",
     "IV":    "ESOVPZJAYQUIRHXLNFTGKDCMWB",
     "V":     "VZBRGITYUPSDNHLXAWMJQOFECK",
-    "A":     "EJMZALYXVBWFCRQUONTSPIKHGD",  # reflector A, B, C
+    "A":     "EJMZALYXVBWFCRQUONTSPIKHGD",              # reflector A, B, C
     "B":     "YRUHQSLDPXNGOKMIEBFZCWVJAT", 
     "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",  
 }
@@ -118,8 +119,9 @@ class Rotor:
             raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-V.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
-        self.position = ALPHABET.index(position.upper())              # converts to int, 0-25
-        self.ring_offset = ring_setting -1                            # converts from 1-26 to 0-25
+        self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # precomputed inverse, O(1) lookup for left-to right
+        self.position = ALPHA_TO_IDX[position.upper()]                  # converts to int, 0-25
+        self.ring_offset = ring_setting -1                              # converts from 1-26 to 0-25
         self.notch = ROTOR_NOTCH.get(name)
     
     def reached_notch(self) -> bool:
@@ -132,17 +134,17 @@ class Rotor:
     
     def encode_right_to_left(self, character: str) -> str:   
         """ Encode input character passing from the rightmost rotor to the leftmost rotor (towards reflector) """
-        alpha_idx = ALPHABET.index(character.upper())
+        alpha_idx = ALPHA_TO_IDX[character.upper()]
         shifted = (alpha_idx + self.position - self.ring_offset) % 26
-        wired = ALPHABET.index(self.wiring[shifted])
+        wired = ALPHA_TO_IDX[self.wiring[shifted]]
         output = (wired - self.position + self.ring_offset) % 26
         return ALPHABET[output]  
     
     def encode_left_to_right(self, character: str) -> str:
         """ Encode input character passing from the leftmost rotor to the rightmost rotor (away from reflector)"""
-        alpha_idx = ALPHABET.index(character.upper())
+        alpha_idx = ALPHA_TO_IDX[character.upper()]
         shifted = (alpha_idx + self.position - self.ring_offset) % 26
-        wired = self.wiring.index(ALPHABET[shifted])
+        wired = self.reverse_wiring[ALPHABET[shifted]]
         output = (wired - self.position + self.ring_offset) % 26
         return ALPHABET[output]
 
@@ -166,7 +168,7 @@ class Reflector:
         self.wiring = ROTOR_WIRING[name]
     
     def encode(self, character: str) -> str:
-        return self.wiring[ALPHABET.index(character.upper())]
+        return self.wiring[ALPHA_TO_IDX[character.upper()]]
                                            
 class EnigmaMachine:  
     """
