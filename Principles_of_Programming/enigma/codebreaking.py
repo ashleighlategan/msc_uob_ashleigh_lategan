@@ -16,11 +16,12 @@ def solution_code_1():
         output = enigma_machine.encode_string(code_text)
 
         if crib in output:
-            print(f"Code 1, uses Reflector: {reflector}, Decoded text is: {output}")
+            print(f"Code 1, uses Reflector: {reflector}, Decoded text: {output}")
 
 def solution_code_2():
     crib = 'UNIVERSITY'
     code_text = 'CMFSUPKNCBMUYEQVVDYKLRQZTPUFHSWWAKTUGXMPAMYAFITXIJKMH'
+    crib_matches = []       # empty list to store any outputs that contain the crib
 
     for r_1 in ALPHABET:
         for r_2 in ALPHABET:
@@ -34,8 +35,18 @@ def solution_code_2():
                     )
                 output = enigma_machine.encode_string(code_text)
                 if crib in output:
-                    print(f"Code 2, uses rotor_positions: {r_1 + r_2 + r_3}, Decoded text is: {output}")
-                    return      # stop the loop if crib is found to be in the output
+                    crib_matches.append({"start_positions": r_1 + r_2 + r_3, "output": output})
+
+    for match in crib_matches:
+        print(f"Code 2 start_positions: {match['start_positions']}, Decoded text: {match['output']}")
+    return crib_matches
+
+
+def solution_code_3():
+    crib = 'THOUSANDS'
+    code_text = 'ABSKJAKKMRITTNYURBJFWQGRSGNNYJSDRYLAPQWIAGKJYEPCTAGDCTHLCDRZRFZHKNRSDLNPFPEBVESHPY'
+    valid_rotor_names = ['Beta', 'Gamma', 'II', 'IV']
+    valid_ring_settings = [2, 4, 6, 8, 22, 24, 26]
 
 
 if __name__ == "__main__":
