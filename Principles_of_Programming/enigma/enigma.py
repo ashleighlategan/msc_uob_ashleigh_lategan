@@ -42,7 +42,7 @@ class Plugboard:
         Maintains a precomputed bidirectional dictionary for O(1) letter lookup.
         """ 
         self.leads: list[PlugLead] =[]          # empty list to start, leads get added via add()
-        self._map: dict[str, str] = {}          # precomputed bidirectional dictionary, O(1) lookup
+        self._map: dict[str, str] = {}          # precomputed bidirectional dictionary of letter to connected letter, O(1) lookup
     
     def add(self, lead: PlugLead) -> None:
         """
@@ -56,7 +56,7 @@ class Plugboard:
         
         for letter in lead.mapping:
             if letter in self._map:                                                        # 0(1) check against existing dictionary                                      
-                raise ValueError(f"The {letter} is already connected to another plug.")
+                raise ValueError(f"The {letter} is already connected to a plug.")
         self.leads.append(lead)         # a lead is only added if all checks pass
 
         # Plugboard connections are bidirectional, need both mappings in dictionary
