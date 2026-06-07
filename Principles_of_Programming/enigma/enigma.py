@@ -32,21 +32,22 @@ class PlugLead:
 
 
 class Plugboard:
+    """
+    Represents the plugboard which can have a maximum of 10 plug leads.
+
+    Maintains a precomputed bidirectional dictionary for O(1) letter lookup.
+    """ 
     TOTAL_LEADS = 10
     
     def __init__(self) -> None:
-        """
-        Represents the plugboard which can have a maximum of 10 plug leads.
-
-        Maintains a precomputed bidirectional dictionary for O(1) letter lookup.
-        """ 
+        """ Initialises an empty plugboard with no plugs connected. """
         self._map: dict[str, str] = {}          # precomputed bidirectional dictionary of letter to connected letter, O(1) lookup
     
     def add(self, lead: PlugLead) -> None:
         """
         Add another PlugLead to the plugboard and update the internal lookup dictionary.
 
-        :param lead: PlugLead object to add
+        :param lead: PlugLead to add
         :raises ValueError: If the plugboard is already full or if the letter is already connected to another plug.
         """
         if len(self._map) // 2 >= self.TOTAL_LEADS:
@@ -58,8 +59,6 @@ class Plugboard:
         # Plugboard connections are bidirectional, need both mappings in dictionary
         self._map[lead.mapping[0]] = lead.mapping[1]
         self._map[lead.mapping[1]] = lead.mapping[0]
-
-
 
     def encode(self, character: str) -> str:
         """
@@ -88,6 +87,9 @@ ROTOR_WIRING = {
     "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",  
 }
 
+ROTOR_NAMES = frozenset({"Beta", "Gamma", "I", "II", "III", "IV", "V"})
+REFLECTOR_NAMES = frozenset({"A", "B", "C"})
+
 # Notch positions for rotors I to V (when rotor is at its notch, the next keypress triggers the rotor to its left)
 ROTOR_NOTCH = {"I": "Q", "II": "E", "III": "V", "IV": "J", "V": "Z"}
     
@@ -111,11 +113,11 @@ class Rotor:
         :param position: Starting letter (defaults to 'A')
         :param ring_setting: Ring setting 1-26 (default 1 (no-offset))
         """
-        if name not in ROTOR_WIRING:
-            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma or I-V.")
+        if name not in ROTOR_NAMES:
+            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma, I, II, III, IV or V.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
-        self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # character to wiring index, O(1) lookup for the left-to-right flow
+        self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # maps each character to its position in the wiring string for O(1) left-to-right lookup
         self.position = ALPHA_TO_IDX[position.upper()]                  # converts to int, 0-25
         self.ring_offset = ring_setting -1                              # converts from 1-26 to 0-25
         self.notch = ROTOR_NOTCH.get(name)
@@ -142,11 +144,7 @@ class Rotor:
         shifted = (alpha_idx + self.position - self.ring_offset) % 26
         wired = self.reverse_wiring[ALPHABET[shifted]]
         output = (wired - self.position + self.ring_offset) % 26
-        return ALPHABET[output]
-
-def rotor_from_name(name:str) -> Rotor:        
-    """ Function creates a rotor from name, with default position and ring setting"""                                      
-    return Rotor(name)             
+        return ALPHABET[output]         
 
 class Reflector:
     """
@@ -160,9 +158,9 @@ class Reflector:
     def __init__(self, name:str) -> None:
         """
         :param name: Reflector name: "A", "B" or "C"
-        :raises ValueError: If the name is not a valid reflector name,
+        :raises ValueError: If the name is not a valid reflector name
         """
-        if name not in ("A", "B", "C"):
+        if name not in REFLECTOR_NAMES:
             raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
         self.name = name
         self.wiring = ROTOR_WIRING[name]
@@ -174,13 +172,22 @@ class Reflector:
         :return: The matching letter based on its wiring.  
         """
         return self.wiring[ALPHA_TO_IDX[character.upper()]]
+    
+def rotor_from_name(name:str) -> Rotor:        
+    """ 
+    Create a Rotor from name, with default position and ring setting
+
+    :param name: Rotor name e.g. "I", "Beta" 
+    :return: Rotor instance at position 'A' and ring setting 1
+    """                                      
+    return Rotor(name)    
                                            
 class EnigmaMachine:  
     """
-    A complete Enigma machine demonstration with the plugboard, rotors and a reflector.
+    A complete Enigma machine with the plugboard, rotors and a reflector.
 
     Rotors are given left-to-right, as you would see looking at the machine 
-    e.g ["I", "II", "III"]where III is the rightmost rotor. 
+    e.g ["I", "II", "III"] where III is the rightmost rotor. 
     The electrical signal moves right-to-left through the rotors, hits the reflector 
     and then moves back left-to-right through the rotors.
 
@@ -224,8 +231,8 @@ class EnigmaMachine:
     
     def _step_rotors(self) -> None:
         """
-        Advance the rotors according to the stepping mechanism.
-        Called once ahead of each character being encoded. 
+        Advance the rotors according to the stepping mechanism,
+        including the double-stepping mechanism for the middle rotor(s).
         """
 
         n = len(self.rotors)
@@ -251,7 +258,7 @@ class EnigmaMachine:
         Rotors will step before the signal passes through them. 
 
         :param character: An uppercase or lowercase letter
-        : return: Encoded uppercase letter
+        :return: Encoded uppercase letter
         """
 
         character = character.upper()
@@ -275,14 +282,12 @@ class EnigmaMachine:
     def encode_string(self, text:str) -> str:
         """
         Encode a string of characters, still advancing the relevant rotors with each keypress. 
+        Any non-alphabetical characters are ignored as the Enigma machine only processes letters.
         
-        :param text: Encrypted or decrypted text (alphabetical letters of any case)
-        : return: Encoded or decoded uppercase text
+        :param text: Encrypted or decrypted text of any case
+        :return: Encoded or decoded uppercase text
         """
         return "".join(self.encode_character(c) for c in text.upper() if c in ALPHABET)
-
-# You will need to write more classes, which can be done here or in separate files, you choose.
-
 
 if __name__ == "__main__":
     # You can use this section to write tests and demonstrations of your enigma code.
@@ -367,3 +372,63 @@ if __name__ == "__main__":
         pass
 
     print("All Plugboard tests passed!")
+
+    # TESTING THE ROTOR:
+    # ---------------------------------------------
+    
+    # Test encoding with rotor set to default position and ring settings. 
+    rotor = rotor_from_name("II")
+    assert(rotor.encode_right_to_left("C") == "D")
+    assert(rotor.encode_left_to_right("C") == "P")
+
+    # Encoding with a non-default position to test the offset logic in both directions.
+    rotor = Rotor("I", position="B")
+    # Position B (index 1): input A hits pin B, wiring[1] = K, output shifted back by 1 = J
+    assert(rotor.encode_right_to_left("A") == "J")
+    # Position B (index 1): input A hits pin B, reverse_wiring[B] = 22 or W , output shifted back by 1 = V
+    assert(rotor.encode_left_to_right("A") == "V")
+
+    # Non-default ring setting — ring 2 shifts wiring in opposite direction to position.
+    # Rotor with Ring 2 at position A is the same as setting it to ring 1 at position Z (one step back).
+    # Both directions are tested to confirm the offset applies symmetrically.
+    rotor_ring_2 = Rotor("I", position="A", ring_setting=2)
+    rotor_pos_Z  = Rotor("I", position="Z", ring_setting=1)
+    for c in ALPHABET:
+        assert rotor_ring_2.encode_right_to_left(c) == rotor_pos_Z.encode_right_to_left(c)
+        assert rotor_ring_2.encode_left_to_right(c) == rotor_pos_Z.encode_left_to_right(c)
+    
+    # Encoding should be self-inverse: right-to-left followed by left-to-right should return the original.
+    # This should hold for any rotor position or ring combination.
+    for name in ["I", "II", "III", "IV", "V", "Beta", "Gamma"]:
+        rotor = Rotor(name, position="D", ring_setting=7)
+        for c in ALPHABET:
+            assert rotor.encode_left_to_right(rotor.encode_right_to_left(c)) == c
+    
+    # reached_notch() test for rotor V which notches at Z
+    rotor = Rotor("V", position="Z")
+    assert rotor.reached_notch() is True
+    rotor = Rotor("V", position="Y")
+    assert rotor.reached_notch() is False
+
+    # Check that the Notchless rotors (Beta, Gamma) don't ever report reaching a notch
+    for a in ALPHABET:
+        assert Rotor("Beta", position= a).reached_notch() is False
+        assert Rotor("Gamma", position= a).reached_notch() is False
+
+    # rotate() advances the position by one, and wraps Z back to A due to modulo
+    rotor = Rotor("I", position="D")
+    rotor.rotate()
+    assert ALPHABET[rotor.position] == "E"
+
+    rotor = Rotor("I", position="Z")
+    rotor.rotate()
+    assert ALPHABET[rotor.position] == "A"
+
+    # Invalid Rotor name should raise a ValueError
+    try:
+        Rotor("X")
+        assert False, "Should have raised ValueError"
+    except ValueError:
+        pass
+
+    print("All Rotor tests passed!")
