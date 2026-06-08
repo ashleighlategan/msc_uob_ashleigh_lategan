@@ -166,16 +166,24 @@ class Reflector:
     This is what ensures encryption and decryption use the same keypress:
     pressing A can never encrypt to A (the machine could never encrypt a
     letter as itself).
+
+    The standard reflectors are 'A', 'B' or 'C' but a user may want to use a non-standard reflector with custom wiring, 
+    if they do then this will override the standard reflector wiring. 
     """
-    def __init__(self, name:str) -> None:
+    def __init__(self, name:str, non_standard_wiring:str|None = None) -> None:
         """
-        :param name: Reflector name: "A", "B" or "C"
-        :raises ValueError: If the name is not a valid reflector name
+        :param name: Reflector name: "A", "B" or "C".
+        :param non_standard_wiring: Optional custom wiring that is used if provided. 
+        :raises ValueError: If the name is not a valid reflector name and only standard wiring was provided.
         """
-        if name not in REFLECTOR_NAMES:
-            raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
-        self.name = name
-        self.wiring = ROTOR_WIRING[name]
+        if non_standard_wiring is not None:
+            self.name = name
+            self.wiring = non_standard_wiring
+        else:
+            if name not in REFLECTOR_NAMES:
+                raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
+            self.name = name
+            self.wiring = ROTOR_WIRING[name]
    
     def __repr__(self) -> str:
         return f"Reflector('{self.name}')"
@@ -214,14 +222,14 @@ class EnigmaMachine:
     """   
     def __init__(self, 
                  rotor_names: list[str],
-                 reflector_name: str,
+                 reflector: Reflector,
                  ring_settings: list[int],
                  starting_positions: str,
                  plugboard_pairs: list[str] | None = None,
                  ) -> None:
         """
         :param rotor_names: Left-to-right rotor names e.g. ["Beta", "III", "V"]
-        :param reflector_name: Reflector name: "A", "B" or "C"
+        :param reflector: Reflector instance (either a standard one 'A', 'B' or 'C' or a custom one with non-standard wiring)
         :param ring_settings: Ring settings 1 to 26 for the rotors from left to right
         :param starting_positions: Starting position as letters, for each rotor e.g. "AAZ"
         :param plugboard_pairs: Optional list of 2-char plug pairs e.g ["CT", "EZ"]
@@ -238,7 +246,7 @@ class EnigmaMachine:
             for name, pos, ring_set in zip(rotor_names, starting_positions, ring_settings)
         ]
 
-        self.reflector = Reflector(reflector_name)
+        self.reflector = reflector
 
         self.plugboard = Plugboard()
         for pair in (plugboard_pairs or []):
@@ -496,19 +504,19 @@ if __name__ == "__main__":
 
     # Incorrect number of rotors should raise an error
     try:
-        EnigmaMachine(rotor_names = ["I", "V"], reflector_name = "B", ring_settings = [1, 1], starting_positions = "AA")
+        EnigmaMachine(rotor_names = ["I", "V"], reflector= Reflector("B"), ring_settings = [1, 1], starting_positions = "AA")
         assert False, "Incorrect number of Rotors provided, should have raised ValueError"
     except ValueError:
         pass
     # Incorrect number of ring settings provided for the number of rotors, should raise an error:
     try:
-        EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="A", ring_settings=[1, 1], starting_positions="AAA")
+        EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("A"), ring_settings=[1, 1], starting_positions="AAA")
         assert False, "Incorrect number of ring settings provided, should have raised ValueError"
     except ValueError:
         pass
      # Incorrect number of starting positions provided for the number of rotors, should raise an error:
     try:
-        EnigmaMachine(rotor_names=["I", "II", "IV"], reflector_name="C", ring_settings=[1, 1, 1], starting_positions="AB")
+        EnigmaMachine(rotor_names=["I", "II", "IV"], reflector= Reflector("C"), ring_settings=[1, 1, 1], starting_positions="AB")
         assert False, "Incorrect number of starting positions provided, should have raised ValueError"
     except ValueError:
         pass
@@ -517,7 +525,7 @@ if __name__ == "__main__":
 
     # We cannot encode non-alphabetical characters, this should raise an error
     try:
-        machine = EnigmaMachine(rotor_names=["I", "II", "IV"], reflector_name="B", ring_settings=[1, 1, 1], starting_positions="AAA")
+        machine = EnigmaMachine(rotor_names=["I", "II", "IV"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
         machine.encode_character("3")
         assert False, "Non-alphabetic character should have raised ValueError"
     except ValueError:
@@ -525,21 +533,21 @@ if __name__ == "__main__":
 
     # Self-inverse testing where we would expect that encoding the output should return the original character
     # We have to use to machine instances set at the same setting as using the same machine wouldn't work since the rotor(s) rotate
-    enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="B", ring_settings=[1, 1, 1], starting_positions="AAA")
-    enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="B", ring_settings=[1, 1, 1], starting_positions="AAA")
+    enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
+    enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
     for c in ALPHABET:
         assert enigma_machine_2.encode_character(enigma_machine_1.encode_character(c)) == c
     
     # Encoding a string containing any non-alphabetical characters will just skip them and not fail
-    enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="A", ring_settings=[1, 1, 1], starting_positions="ACD")
-    enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="A", ring_settings=[1, 1, 1], starting_positions="ACD")
+    enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("A"), ring_settings=[1, 1, 1], starting_positions="ACD")
+    enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("A"), ring_settings=[1, 1, 1], starting_positions="ACD")
     assert enigma_machine_1.encode_string("HE LLO") == enigma_machine_2.encode_string("HELLO")
 
     # If we have 3 rotors set at ADU then after 3 keystrokes should have ADV, AEW and BFX rotor positions
     # Start at ADU as U is just before Rotor III's notch at V 
     # We also then hit AEW after 1 keypress and E is Rotor II's notch so we can test the double-step
     # Confirmed with the Enigma Machine Emulator: https://www.101computing.net/enigma-machine-emulator/
-    enigma_machine = EnigmaMachine(rotor_names=["I", "II", "III"], reflector_name="C", ring_settings=[1, 1, 1], starting_positions="ADU")
+    enigma_machine = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("C"), ring_settings=[1, 1, 1], starting_positions="ADU")
     positions = []
     for _ in range(3):
         enigma_machine.encode_character("A")
@@ -567,7 +575,7 @@ if __name__ == "__main__":
     assert repr(Reflector("C")) == "Reflector('C')"
 
     # EnigmaMachine
-    assert repr(EnigmaMachine(["Gamma", "V", "I"], "C", [2,1,1], "AAZ"))
+    assert repr(EnigmaMachine(["Gamma", "V", "I"], Reflector("C"), [2,1,1], "AAZ"))
 
     print("All __repr__ tests have passed!")
 
