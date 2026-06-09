@@ -115,7 +115,7 @@ def solution_code_4():
     return crib_matches    
         
 def solution_code_5():
-    cribs = ['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'SNAPCHAT','YOUTUBE', 'WHATSAPP']
+    cribs = ['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'SNAPCHAT','YOUTUBE', 'WHATSAPP', 'LINKEDIN', 'PINTEREST', 'REDDIT']
     code_text = 'HWREISXLGTTBYVXRCWWJAKZDTVZWKBDJPVQYNEQIOTIFX' 
     crib_matches = [] 
 
@@ -124,9 +124,10 @@ def solution_code_5():
         pairs = [ (ALPHABET[i], wiring[i]) for i in range(26) if ALPHABET[i] < wiring[i]]
         checked_wires = set()                          # each reflector gets a new set
 
-        for changed_pairs in combinations(pairs,4):
-            for first_choice in combinations(changed_pairs,2):
-                second_choice = [p for p in changed_pairs if p not in first_choice]
+        for first_choice in combinations(pairs,2):
+            for second_choice in combinations(pairs,2):
+                if set(first_choice) & set(second_choice):      # skip if the pair was already chosen in first choice
+                    continue
                 for swap_1 in range(2):
                     (a1, a2) = first_choice[0]      # 1st pair e.g. ('C', 'M') where a1 = 'C' and a2 = 'M'
                     (b1, b2) = first_choice[1]      # 2nd pair e.g. ('F', 'P') where a1 = 'F' and a2 = 'P'
@@ -142,17 +143,17 @@ def solution_code_5():
                             new_pairs_2 = [(c1, d2), (d1, c2)]
                         else:                           # becomes ('B','D'), ('R','Z')
                             new_pairs_2 = [(c1, d1), (c2, d2)]
-                                
+                                    
                         wiring_list = list(wiring)
                         for (x, y) in new_pairs_1 + new_pairs_2:
                             wiring_list[ALPHA_TO_IDX[x]] = y
                             wiring_list[ALPHA_TO_IDX[y]] = x
-                                
+                                    
                         updated_wiring = "".join(wiring_list)
                         if updated_wiring in checked_wires:             # skip the already checked wires
                             continue
                         checked_wires.add(updated_wiring)               # record wiring as checked
-            
+                
                         enigma_machine = EnigmaMachine(
                             rotor_names = ['V', 'II', 'IV'],
                             reflector = Reflector(reflector_name, updated_wiring),
