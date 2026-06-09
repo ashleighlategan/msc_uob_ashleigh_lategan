@@ -145,7 +145,7 @@ def solution_code_5():
                             new_pairs_2 = [(c1, d1), (c2, d2)]
                                     
                         wiring_list = list(wiring)
-                        for (x, y) in new_pairs_1 + new_pairs_2:
+                        for (x, y) in new_pairs_1 + new_pairs_2:        # unpack each of the swapped pairs and ensure they are saved in both directions so reflector is self-inverse
                             wiring_list[ALPHA_TO_IDX[x]] = y
                             wiring_list[ALPHA_TO_IDX[y]] = x
                                     
