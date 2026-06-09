@@ -1,6 +1,5 @@
 from enigma import EnigmaMachine, Reflector, REFLECTOR_NAMES, ALPHABET, ROTOR_WIRING, ALPHA_TO_IDX
 from itertools import permutations, product, combinations
-from math import comb
 
 def solution_code_1():
     crib = 'SECRETS'
@@ -75,56 +74,55 @@ def solution_code_3():
     return crib_matches
 
 def solution_code_4():
-        crib = 'TUTOR'
-        code_text = 'SDNTVTPHRBNWTLMZTQKZGADDQYPFNHBPNHCQGBGMZPZLUAVGDQVYRBFYYEIXQWVTHXGNW' 
-        crib_matches = [] 
-        plugboard_pairs = 'WP RJ A? VF I? HN CG BS'.split()
-        known_pairs = [p for p in plugboard_pairs if '?' not in p]
-        used_letters = {c for p in plugboard_pairs for c in p if c != '?'}
-        scenario_2_pool = set(ALPHABET) - used_letters 
+    crib = 'TUTOR'
+    code_text = 'SDNTVTPHRBNWTLMZTQKZGADDQYPFNHBPNHCQGBGMZPZLUAVGDQVYRBFYYEIXQWVTHXGNW' 
+    crib_matches = [] 
+    plugboard_pairs = 'WP RJ A? VF I? HN CG BS'.split()
+    known_pairs = [p for p in plugboard_pairs if '?' not in p]
+    used_letters = {c for p in plugboard_pairs for c in p if c != '?'}
+    scenario_2_pool = set(ALPHABET) - used_letters 
         
-        # Scenario 1: I and A are connected to each other:
-        test_pairs = known_pairs + ['AI']
-        enigma_machine = EnigmaMachine(
-            rotor_names = ['V', 'III', 'IV'],
-            reflector = Reflector('A'),
-            ring_settings= [24, 12, 10],
-            starting_positions = "EMY",
-            plugboard_pairs = test_pairs,
-            )
-        output = enigma_machine.encode_string(code_text)
-        if crib in output:
-            crib_matches.append({"plugboard_pairs": test_pairs, "output": output})
+    # Scenario 1: I and A are connected to each other:
+    test_pairs = known_pairs + ['AI']
+    enigma_machine = EnigmaMachine(
+        rotor_names = ['V', 'III', 'IV'],
+        reflector = Reflector('A'),
+        ring_settings= [24, 12, 10],
+        starting_positions = "EMY",
+        plugboard_pairs = test_pairs,
+        )
+    output = enigma_machine.encode_string(code_text)
+    if crib in output:
+        crib_matches.append({"plugboard_pairs": test_pairs, "output": output})
 
-        # Scenario 2: I and A are not connected to each other:
-        for a_plug in scenario_2_pool:
-            for i_plug in scenario_2_pool - {a_plug}:
-                test_pairs = known_pairs + ['A' + a_plug] + ['I' + i_plug]
-                enigma_machine = EnigmaMachine(
-                    rotor_names = ['V', 'III', 'IV'],
-                    reflector = Reflector('A'),
-                    ring_settings= [24, 12, 10],
-                    starting_positions = "SWU",
-                    plugboard_pairs = test_pairs,
-                    )
-                output = enigma_machine.encode_string(code_text)
-                if crib in output:
-                    crib_matches.append({"plugboard_pairs": test_pairs, "output": output})
+    # Scenario 2: I and A are not connected to each other:
+    for a_plug in scenario_2_pool:
+        for i_plug in scenario_2_pool - {a_plug}:
+            test_pairs = known_pairs + ['A' + a_plug] + ['I' + i_plug]
+            enigma_machine = EnigmaMachine(
+                rotor_names = ['V', 'III', 'IV'],
+                reflector = Reflector('A'),
+                ring_settings= [24, 12, 10],
+                starting_positions = "SWU",
+                plugboard_pairs = test_pairs,
+                )
+            output = enigma_machine.encode_string(code_text)
+            if crib in output:
+                crib_matches.append({"plugboard_pairs": test_pairs, "output": output})
     
-        for match in crib_matches:
-            print(f"Code 4 plugboard pairs: {match['plugboard_pairs']}, Decoded text: {match['output']}")
-        return crib_matches    
+    for match in crib_matches:
+        print(f"Code 4 plugboard pairs: {match['plugboard_pairs']}, Decoded text: {match['output']}")
+    return crib_matches    
         
 def solution_code_5():
-    cribs = ['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'SNAPCHAT', 'PINTEREST', 'TWITTER' , 'REDDIT', 'YOUTUBE', 'WHATSAPP', 'LINKEDIN']
+    cribs = ['FACEBOOK', 'INSTAGRAM', 'TIKTOK', 'SNAPCHAT','YOUTUBE', 'WHATSAPP']
     code_text = 'HWREISXLGTTBYVXRCWWJAKZDTVZWKBDJPVQYNEQIOTIFX' 
     crib_matches = [] 
 
     for reflector_name in REFLECTOR_NAMES:
         wiring = ROTOR_WIRING[reflector_name]
         pairs = [ (ALPHABET[i], wiring[i]) for i in range(26) if ALPHABET[i] < wiring[i]]
-        print(f"Reflector {reflector_name}: {len(pairs)} pairs: {pairs}")
-        break  # just check first reflector for now
+        checked_wires = set()                          # each reflector gets a new set
 
         for changed_pairs in combinations(pairs,4):
             for first_choice in combinations(changed_pairs,2):
@@ -151,6 +149,10 @@ def solution_code_5():
                             wiring_list[ALPHA_TO_IDX[y]] = x
                                 
                         updated_wiring = "".join(wiring_list)
+                        if updated_wiring in checked_wires:             # skip the already checked wires
+                            continue
+                        checked_wires.add(updated_wiring)               # record wiring as checked
+            
                         enigma_machine = EnigmaMachine(
                             rotor_names = ['V', 'II', 'IV'],
                             reflector = Reflector(reflector_name, updated_wiring),
@@ -161,7 +163,6 @@ def solution_code_5():
                         output = enigma_machine.encode_string(code_text)
 
                         for crib in cribs:
-
                             if crib in output:
                                 crib_matches.append({
                                     'reflector': reflector_name,
@@ -176,10 +177,10 @@ def solution_code_5():
     return crib_matches
 
 if __name__ == "__main__":
-    #solution_code_1()
-    #solution_code_2()
-    #solution_code_3()
-    #solution_code_4()
+    solution_code_1()
+    solution_code_2()
+    solution_code_3()
+    solution_code_4()
     solution_code_5()
 
 
