@@ -94,6 +94,9 @@ def enhanced_enigma_testing():
     
     enhanced_reflector_name = "New_A"
 
+    # Two separate machines are required for this test since the relevant rotor(s) advance with each keypress.
+    # If the same machine was reused, it would be starting off at the wrong rotor position(s).
+
     enhanced_machine_1 = EnhancedEnigmaMachine(
         rotor_names = ["Beta", 'II', 'V'],
         reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
@@ -113,7 +116,32 @@ def enhanced_enigma_testing():
 
     print("Test 3 passed: The EnhancedEnigmaMachine no longer features the reciprocal coding constraint" )
 
+    # Test 4: Checking decode produces the original input
+    # such that decode(encode(text)) == text
+    # Like in test 3 we require 2 separate machines to test this, since the relevant rotor(s) will advance with each keypress. 
+
+    encoding_machine = EnhancedEnigmaMachine(
+        rotor_names = ["Beta", 'II', 'V'],
+        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        ring_settings = [1, 1, 1],
+        starting_positions = "AAA",
+        )
     
+    decoding_machine = EnhancedEnigmaMachine(
+        rotor_names = ["Beta", 'II', 'V'],
+        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        ring_settings = [1, 1, 1],
+        starting_positions = "AAA",
+        )
+    
+    input_text = "THISISTESTFOUROFTHEENHANCEDENIGMAMACHINE"
+    encrypted_text = encoding_machine.encode_string(input_text)
+    decrypted_text = decoding_machine.decode_string(encrypted_text)
+
+    assert decrypted_text == input_text, (f""" Decoding the encrypted_text should return {input_text}, 
+                                              result was: {decrypted_text}.""")
+    
+    print("Test 4 passed showing that the separate decode method works to return the input string for the same machine settings")
 
 if __name__ == "__main__":
     enhanced_reflector_testing()
