@@ -125,6 +125,7 @@ def enhanced_enigma_testing():
         reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
+        plugboard_pairs = ['AB', 'EF', 'XY'],  
         )
     
     decoding_machine = EnhancedEnigmaMachine(
@@ -132,6 +133,7 @@ def enhanced_enigma_testing():
         reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
+        plugboard_pairs = ['AB', 'EF', 'XY'],  
         )
     
     input_text = "THISISTESTFOUROFTHEENHANCEDENIGMAMACHINE"
@@ -150,7 +152,7 @@ def enhanced_enigma_testing():
             rotor_names = ["Beta", 'II', 'V'],
             reflector = Reflector("A"),
             ring_settings = [1, 1, 1],
-            starting_positions = "AAA",            
+            starting_positions = "AAA",
             )
         assert False, "Should have raised a ValueError."
     

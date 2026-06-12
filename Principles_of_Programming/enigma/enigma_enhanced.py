@@ -108,6 +108,8 @@ class EnhancedEnigmaMachine(EnigmaMachine):
 
         for rotor in self.rotors:                           # rotors are stored left to right so no reversed needed
             signal = rotor.encode_left_to_right(signal)
+        
+        signal = self.plugboard.encode(character)
                 
         return signal
                     
