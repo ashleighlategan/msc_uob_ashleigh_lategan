@@ -75,4 +75,43 @@ def enhanced_reflector_testing():
         
         print("Test 1 passed showing that the standard machine does not support self-coding.")
 
+        # Test 2: Removing the non-self-coding constraint
+        # The standard enigma machine cannot have a letter map to itself.
+        # The EnhancedEnigma machine is setup such that it no longer has this restriction 
+        # We need to check that passing wiring for the refelctor where a letter maps to itself, is accepted
+
+        self_coding_wiring = ALPHABET
+        ref_self_code = EnhancedReflector("self-code refelctor", self_coding_wiring)
+        assert ref_self_code.encode("A") == "A", ("""A letter should be able to encode to itself using the EnhancedReflector 
+                                                  with the necessary wiring provided.""")
+        
+        print("Test 2 passed showing that the enhanced refelctor does not have the non-self-coding constraint.")
+
+        # Test 3: Removing the reciprocal coding constraint.
+        # The standard enigma machine was symmetrical such that encoding and decoding were the same with the same machine settings.
+        # For example inputting a character "A" encodes to "D" and at the same settings, "D" then encodes back to "A".
+        # The EnhancedEnigmaMachine does not have this feature so encoding a input character and then encoding the output should not return the same input character.
+
+        enhanced_machine_1 = EnhancedEnigmaMachine(
+            rotor_names = ["Beta", 'II', 'V'],
+            reflector = EnhancedReflector(enhanced_reflector_name, "NEW_A_WIRING"),
+            ring_settings = [1, 1, 1],
+            starting_positions = "AAA",
+        )
+        enhanced_machine_2 = EnhancedEnigmaMachine(
+            rotor_names = ["Beta", 'II', 'V'],
+            reflector = EnhancedReflector(enhanced_reflector_name, "NEW_A_WIRING"),
+            ring_settings = [1, 1, 1],
+            starting_positions = "AAA",
+        )
+
+        reciprocal_constraint_present = all(enhanced_machine_2.encode_character(enhanced_machine_1.encode_character(c))
+                                            == c for c in ALPHABET)
+        assert not reciprocal_constraint_present, ("The EnhancedEnigmaMachine's encode is not self-inverse.")
+
+        print("Test 3 passed: The EnhancedEnigmaMachine no longer features the reciprocal coding constraint" )
+
+    
+
+
     
