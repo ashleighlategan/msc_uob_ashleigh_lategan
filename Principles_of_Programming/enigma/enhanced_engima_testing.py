@@ -85,7 +85,7 @@ def enhanced_enigma_testing():
     assert ref_self_code.encode("A") == "A", ("""A letter should be able to encode to itself using the EnhancedReflector 
                                                   with the necessary wiring provided.""")
         
-    print("Test 2 passed showing that the enhanced refelctor does not have the non-self-coding constraint.")
+    print("Test 2 passed showing that the enhanced reflector does not have the non-self-coding constraint.")
 
     # Test 3: Removing the reciprocal coding constraint.
     # The standard enigma machine was symmetrical such that encoding and decoding were the same with the same machine settings.
@@ -143,7 +143,132 @@ def enhanced_enigma_testing():
     
     print("Test 4 passed showing that the separate decode method works to return the input string for the same machine settings")
 
+    # Test 5: The EnhancedEnigmaMachine reflector shouldn't work with a standard reflector
+
+    try:
+        EnhancedEnigmaMachine(
+            rotor_names = ["Beta", 'II', 'V'],
+            reflector = Reflector("A"),
+            ring_settings = [1, 1, 1],
+            starting_positions = "AAA",            
+            )
+        assert False, "Should have raised a ValueError."
+    
+    except ValueError:
+        pass
+    
+    print("Test 5 passed showing that the EnhancedEnigmaMachine will not work with a standard reflector.")
+    print("All EnhancedEnigmaMachine tests have been passed!")
+
+    # Analysis of the key space for the standard EnigmaMachine vs the EnhancedEnigmaMachine     
+
+def number_involutions(n:int) -> int:
+    """
+    The number of self-inverse permutations (involutions) on n elements where every 
+    element either stays fixed or swaps with one other element (Knuth, 1998, p.48).
+
+    Use the recurrence given as Equation (40) by Knuth (1998, p.62)
+    I(n) = I(n-1) + (n-1) * I(n-2), I(0) = I(1) = 1 
+
+    This is to quantify the key space if only the reciprocal weakness of the Enigma machine remains,
+    so the self-coding weakness is removed. 
+    """
+    previous, current = 1,1
+    for i in range(2, n+1):
+        previous, current = current, current + (i-1) * previous
+    return current
+
+def number_derangements(n: int) -> int:
+    """
+    The number of non-self-code permutations (derangements) on n elements:
+    permutations where no letter can map to itself. 
+
+    Use the Inclusion-exclusion formula given as Equation (5.50) by Graham et al (1994, p.194)
+    
+    D(n) = sum_{k=0}^{n} (-1)^k * n! / k!
+
+    This is to quantify the key space if only the self-coding weakness of the Enigma machine remains,
+    so the reciprocal weakness is removed.  
+    """
+    # range(n+1) gives k = 0, 1, ..., n inclusive, which is the same as sum_{k=0}^{n} from the formula
+    # (-1)**k alternates +/- with each term, which is the inclusion-exclusion correction
+    return sum((-1)**k * math.factorial(n) // math.factorial(k) for k in range(n+1))
+
+def standard_enigma_space(n: int) -> int:
+    """
+    This is the standard enigma key space where both weaknesses are present, no letter can encrypt to itself and,
+    the machine encryption is self-inverse.
+    Counted by p(n) = (n-1)!! = (n-1)*(n-3)*...*1
+    where p(n) = (n-1)*p(n-2) with p(0) = 1
+
+    So a partner is selected for the first letter (n-1 options) and then
+    the remaining n-2 letters get paired up (Thimbleby, 2016, pp.183-184). 
+
+    n needs to be even since letters will pair up and if n were odd there would be a letter missing a pair.
+    """
+
+    if n % 2 != 0:
+        return 0
+    return math.prod(range(1,n,2))          # (n-1) * (n-3) *....* 1
+
+def thimbleby_fig_2_test():
+    """
+    Confirms if the functions defined align with Thimbleby's Figure 2 table (2016, p.185).
+    The figure represents different combinations of the two coding weaknesses:
+    - self-coding weakness
+    - reciprocal weakness
+    and their effects on the permutations for a 4 letter sequence. 
+    """
+    assert math.factorial(4) == 24,         "Should have returned 24 permutations for 4 elements"
+    assert number_derangements(4) == 9,     "Expected 9 permutations given that the reciprocal weakness is removed"
+    assert number_involutions(4) == 10,     "Expected 10 permutations given that the self-code weakness is removed"
+    assert standard_enigma_space(4) == 3,     "Should have returned 3 permutations with both weaknesses present"
+    print("All tests from Figure 2 have been validated for 4 letters.")
+
+
+def key_space_calc():
+    """
+    Calculates the letter-permutation ey space for the standard EnigmaMachine and the EnhancedEnigmaMachine, 
+    to quantify the effect that the self-coding and reciprocal coding weaknesses 
+    had on the standard machine (Thimbleby, 2016).
+
+    The standard EnigmaMachine has two major weaknesses: no letter can encrypt to itself (self-coding weakness) and 
+    encryption is its own inverse (reciprocal weakness). 
+    With both of these constraints, the standard machine is limited to only permutations that pair up its 26 letters into
+    13 reciprocal, non-self-coding pairs. 
+    These count is p(26) = 25*23*21*...*1 (Thimbleby, 2016, pp.183-184).
+
+    Since the EnhancedMachine does not have the same constraints as the standard machine, 
+    all 26! letter-substitution permutations are available (Thimbleby, 2016, p.183).
+
+    """
+    n = 26 # 26 letters of the alphabet
+    both_weaknesses_pres = standard_enigma_space(n)                     # Standard EnigmaMachine with both weaknesses
+    reciprocal_only = number_involutions(n)                             # No self-coding weakness
+    self_coding_only = number_derangements(n)                           # No reciprocal weakness
+    remove_both_weaknesses = math.factorial(n)                          # EnhancedEnigmaMachine
+
+    print("Enigma Machine Key space Comparison")
+    print(f"Number of permutations when both weaknesses are present:{both_weaknesses_pres:.3e} ")
+    print(f"Number of permutations if self-coding weakness is removed:{reciprocal_only:.3e} (x{reciprocal_only/both_weaknesses_pres:.1f} larger) ")
+    print(f"Number of permutations if reciprocal weakness is removed:{self_coding_only:.3e} (x{self_coding_only/both_weaknesses_pres:.3e} larger) ")
+    print(f"Number of permutations if neither weakness is present:{remove_both_weaknesses:.3e} (x{remove_both_weaknesses/both_weaknesses_pres:.3e} larger) ")
+    print()
+
+
+
+  
 if __name__ == "__main__":
     enhanced_reflector_testing()
     enhanced_enigma_testing()
+    print()
+    thimbleby_fig_2_test()
+    key_space_calc()
+
+
+
+#References
+# Thimbleby, H., 2016. Human factors and missed solutions to Enigma design weaknesses. Cryptologia, 40(2), pp.177-202.
+# Knuth, D.E., 1998. The art of computer programming, vol. 3: sorting and searching. 2nd ed. Reading, Mass.: Addison Wesley Longman.
+# Graham, R.L., Knuth, D.E. and Patashnik, O., 1994. Concrete mathematics: a foundation for computer science. 2nd ed. Reading, Mass.: Addison-Wesley Longman.
          

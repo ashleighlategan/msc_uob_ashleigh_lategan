@@ -4,8 +4,8 @@ class EnhancedReflector(Reflector):
     """ 
     A non-standard Enigma reflector that takes in any permutation of 26-letters. 
 
-    The standard Enigma Reflector was fixed-point-free so not letter could map to itself e.g. B couldn't map to B and 
-    it had the property of involution meaning that any mapping was self-inverse so B-S and S-B. 
+    The standard Enigma Reflector could not have a letter map to itself e.g. B couldn't map to B and 
+    in encoding in the standard machine was self-inverse so B-S and S-B. 
     These were both caused by the shared key/lamp wire in the Enigma Machine hardware (Thimbleby, 2016, p.189)
 
     If we remove these constraints, then encode and decode are separate operations. 
@@ -16,7 +16,7 @@ class EnhancedReflector(Reflector):
 
     def __init__(self, name:str, wiring: str) -> None:
         """
-        :param name: The name fo the reflector e.g. 'A_enhanced'
+        :param name: The name of the reflector e.g. 'A_enhanced'
         :param wiring: The 26-letter permutation string where each letter A-Z appears only one. 
         :raised ValueError: If the wiring does not conform to the 26-alphabetic-letter, no repetition wiring requirement. 
         """
@@ -33,8 +33,10 @@ class EnhancedReflector(Reflector):
         self.name = name
         self.wiring = wiring 
 
-        # decode inverse mapping, where wiring[i] = 'A' then inverse_wiring['A'] = ALPHABET[i]
-        # not needed for the standard EnigmaMachine since it is its own self-inverse
+        # The standard reflector's wiring is self-inverse (encode(encode(c)) == c for all alphabetical letters), so
+        # it could leverage encode on both the forward and reverse signal paths.
+        # This EnhancedReflector is not self-inverse so we need to define a decode method for the return path
+        # If wiring[3] == 'A' then inverse_wiring['A'] == ALPHABET[3] == 'D'
 
         self.inverse_wiring: dict[str, str] = {char: ALPHABET[i] for i, char in enumerate(wiring)}
 
@@ -44,6 +46,10 @@ class EnhancedReflector(Reflector):
     def decode(self, character: str) -> str:
         """
         Leverage the inverse of the Reflector's wiring to decode a character. 
+        The standard machine did not require this because its encode() was self-inverse.
+
+        E.g If encode('A') == 'J', encode('J') != 'A' so a separate decode is required. 
+
         :param character: A single letter of any case.
         :return: The inverse mapping for the letter.
         """
@@ -51,12 +57,11 @@ class EnhancedReflector(Reflector):
         
 class EnhancedEnigmaMachine(EnigmaMachine):
     """
-    An updated EnigmaMachine that no longer has the reciprocal weakness of the standard machine (Thimbleby, 2016, p.177-202).
+    An updated EnigmaMachine that no longer has the reciprocal weakness of the standard machine (Thimbleby, 2016).
 
     The rotor functionality is the same as the original EnigmaMachine which is the superclass here. 
     This machine uses an enhanced reflector that is not self-inverse. 
     The forward path uses encode and reverse path uses decode, such that decode(encode('A')) == 'A'. 
-
 
     Reference: Thimbleby, H., 2016. Human factors and missed solutions to Enigma design weaknesses. Cryptologia, 40(2), pp.177-202. 
     """                
@@ -114,7 +119,9 @@ class EnhancedEnigmaMachine(EnigmaMachine):
         :param text: Encrypted text of any case.
         :return: Decoded uppercase text.
         """
-        return "".join(self.decode_character(c) for c in text.upper() if c in ALPHABET)            
+        return "".join(self.decode_character(c) for c in text.upper() if c in ALPHABET)     
+
+
                                                 
                     
 
