@@ -19,7 +19,7 @@ class EnhancedReflector(Reflector):
         :param wiring: The 26-letter permutation string where each letter A-Z appears only one. 
         :raised ValueError: If the wiring does not conform to the 26-alphabetic-letter, no repetition wiring requirement. 
         """
-        wiring = wiring.update()
+        wiring = wiring.upper()
     
         if len(wiring) != 26:
             raise ValueError("Reflector wiring needs to be exactly 26 letters.")
@@ -52,11 +52,29 @@ class EnhancedReflector(Reflector):
             """
             An updated EnigmaMachine that no longer has the reciprocal weakness of the standard machine (Thimbleby, 2016, p.177-202).
 
-            The machine used an enhanced reflector that is not self-inverse. The forward path uses encode and reverse path uses decode,
-            such that decode(encode('A')) == 'A'
+            The rotor functionality is the same as the original EnigmaMachine which is the superclass here. 
+            This machine uses an enhanced reflector that is not self-inverse. 
+            The forward path uses encode and reverse path uses decode, such that decode(encode('A')) == 'A'. 
+
 
             Reference: Thimbleby, H., 2016. Human factors and missed solutions to Enigma design weaknesses. Cryptologia, 40(2), pp.177-202. 
             """
+
+            def __init__(self, 
+                         rotor_names: list[str], 
+                         reflector: EnhancedReflector, 
+                         ring_settings: list[int], 
+                         starting_positions: str, 
+                         plugboard_pairs: list[str] | None = None,
+            ) -> None:
+                """
+                :param rotor_names: Refer to the EnigmaMachine in enigma.py.
+                :param reflector: EnhancedReflector instance
+                :param ring_settings: Refer to the EnigmaMachine in enigma.py.
+                :param starting_positions: Refer to the EnigmaMachine in enigma.py.
+                :param plugboard_pairs: Refer to the EnigmaMachine in enigma.py.
+                raises ValueError: If the reflector used is not an instance of the EnhancedReflector.
+                """
 
             
 

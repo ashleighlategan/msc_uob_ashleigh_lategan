@@ -228,11 +228,14 @@ class EnigmaMachine:
                  plugboard_pairs: list[str] | None = None,
                  ) -> None:
         """
-        :param rotor_names: Left-to-right rotor names e.g. ["Beta", "III", "V"]
-        :param reflector: Reflector instance (either a standard one 'A', 'B' or 'C' or a custom one with non-standard wiring)
-        :param ring_settings: Ring settings 1 to 26 for the rotors from left to right
-        :param starting_positions: Starting position as letters, for each rotor e.g. "AAZ"
-        :param plugboard_pairs: Optional list of 2-char plug pairs e.g ["CT", "EZ"]
+        :param rotor_names: Left-to-right rotor names e.g. ["Beta", "III", "V"].
+        :param reflector: Reflector instance (either a standard one 'A', 'B' or 'C' or a custom one with non-standard wiring).
+        :param ring_settings: Ring settings 1 to 26 for the rotors from left to right.
+        :param starting_positions: Starting position as letters, for each rotor e.g. "AAZ".
+        :param plugboard_pairs: Optional list of 2-char plug pairs e.g ["CT", "EZ"].
+        :raises ValueError: If the number of rotors is not 3 or 4.
+        :raises ValueError: If the number of ring settings is not equivalent to the number of rotors.
+        :raises ValueError: If the number of starting positions is not equivalent to the number of rotors.
         """
         if len(rotor_names) not in (3,4):
             raise ValueError("Enigma machines require 3 or 4 rotors.")
