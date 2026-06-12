@@ -73,8 +73,37 @@ class EnhancedReflector(Reflector):
                 :param ring_settings: Refer to the EnigmaMachine in enigma.py.
                 :param starting_positions: Refer to the EnigmaMachine in enigma.py.
                 :param plugboard_pairs: Refer to the EnigmaMachine in enigma.py.
-                raises ValueError: If the reflector used is not an instance of the EnhancedReflector.
+                :raises ValueError: If the reflector used is not an instance of the EnhancedReflector.
                 """
+                if not isinstance(reflector, EnhancedReflector):
+                    raise ValueError("""The EnhancedEnigmaMachine needs to use the EnhancedReflector, so that
+                                     letters can encrypt to themselves and that the reflector is not its own inverse.""")
+                
+                super().__init__(rotor_names, reflector, ring_settings, starting_positions, plugboard_pairs)
+
+                def decode_character(self, character:str) -> str:
+                    """
+                    Single letter decoding where the reflector will use its inverse mapping. 
+
+                    :param character: A single letter of any case.
+                    :raises ValueError: if the character is not an alphabetical letter. 
+                    :return: The decoded uppercase letter. 
+                    """
+                    character = character.upper()
+                    if character not in ALPHABET:
+                        raise ValueError(f"The character {character} is not an alphabetical letter from A to Z.")
+                    
+                    self._step_rotors()
+
+                    signal = self.plugboard.encode(character)
+
+                    for rotor in reversed(self.rotors):              # right to left
+                        signal = rotor.encode_right_to_left(signal)
+
+                    signal = self.reflector.decode(signal)          
+
+
+
 
             
 
