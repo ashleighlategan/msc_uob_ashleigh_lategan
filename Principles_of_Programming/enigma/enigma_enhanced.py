@@ -83,7 +83,8 @@ class EnhancedReflector(Reflector):
 
                 def decode_character(self, character:str) -> str:
                     """
-                    Single letter decoding where the reflector will use its inverse mapping. 
+                    Single letter decoding where the reflector will use its inverse mapping and 
+                    the relevant rotors step with each keypress. 
 
                     :param character: A single letter of any case.
                     :raises ValueError: if the character is not an alphabetical letter. 
@@ -97,10 +98,28 @@ class EnhancedReflector(Reflector):
 
                     signal = self.plugboard.encode(character)
 
-                    for rotor in reversed(self.rotors):              # right to left
+                    for rotor in reversed(self.rotors):                 # reversed works through the rotor list form right to left
                         signal = rotor.encode_right_to_left(signal)
 
-                    signal = self.reflector.decode(signal)          
+                    signal = self.reflector.decode(signal)              # reflector using its inverse mapping
+
+                    for rotor in self.rotors:                           # rotors are stored left to right so no reversed needed
+                        signal = rotor.encode_left_to_right(signal)
+                    
+                def decode_string(self, text: str) -> str:
+                    """
+                    Decode a string of characters, still advancing the relevant rotors with each keypress. 
+                    Any non-alphabetical characters are ignored.
+                    
+                    :param text: Encrypted text of any case.
+                    :return: Decoded uppercase text.
+                    """
+                    return "".join(self.decode_character(c) for c in text.upper() if c in ALPHABET)
+                             
+                    
+
+
+
 
 
 
