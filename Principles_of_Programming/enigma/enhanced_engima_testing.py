@@ -185,7 +185,7 @@ def number_derangements(n: int) -> int:
     The number of non-self-code permutations (derangements) on n elements:
     permutations where no letter can map to itself. 
 
-    Use the Inclusion-exclusion formula given as Equation (5.50) by Graham et al (1994, p.194)
+    Use the inclusion-exclusion formula given as Equation (5.50) by Graham et al (1994, p.194)
     
     D(n) = sum_{k=0}^{n} (-1)^k * n! / k!
 
