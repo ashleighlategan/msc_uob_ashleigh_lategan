@@ -175,8 +175,22 @@ class Reflector:
         :param name: Reflector name: "A", "B" or "C".
         :param non_standard_wiring: Optional custom wiring that is used if provided. 
         :raises ValueError: If the name is not a valid reflector name and only standard wiring was provided.
+        :raises ValueError: If the non-standard reflector wiring is not exactly 26 characters.
+        :raises ValueError: If the non-standard reflector wiring do not only contain alphabetical characters.
+        :raises ValueError: If the non-standard reflector wiring attempts to encode a letter to itself
         """
         if non_standard_wiring is not None:
+            non_standard_wiring = non_standard_wiring.upper()
+            if len(non_standard_wiring) !=26:
+                raise ValueError("Reflector wiring needs to be exactly 26 letters.")
+            if not non_standard_wiring.isalpha():
+                raise ValueError("Reflector wiring needs to only consist of alphabetical letters.")
+            if len(set(non_standard_wiring)) !=26:
+                raise ValueError("Reflector wiring must contain each letter only once.")
+            # In the standard reflector no letter can map to itself
+            for i, maps in enumerate(non_standard_wiring):
+                if maps == ALPHABET[i]:
+                    raise ValueError("Reflector wiring cannot map the same letter to itself.")
             self.name = name
             self.wiring = non_standard_wiring
         else:
