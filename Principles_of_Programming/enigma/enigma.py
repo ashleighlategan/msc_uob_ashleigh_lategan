@@ -177,6 +177,7 @@ class Reflector:
         :raises ValueError: If the name is not a valid reflector name and only standard wiring was provided.
         :raises ValueError: If the non-standard reflector wiring is not exactly 26 characters.
         :raises ValueError: If the non-standard reflector wiring do not only contain alphabetical characters.
+        :raises ValueError: If the non-standard reflector wiring does not contain only one entry for each letter.
         :raises ValueError: If the non-standard reflector wiring attempts to encode a letter to itself
         """
         if non_standard_wiring is not None:
