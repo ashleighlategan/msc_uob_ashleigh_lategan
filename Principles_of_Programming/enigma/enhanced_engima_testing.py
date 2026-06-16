@@ -87,10 +87,10 @@ def enhanced_enigma_testing():
     print("Test 2 passed showing that the enhanced reflector does not have the non-self-coding constraint.")
 
     # Test 3: The EnhancedEnigmaMachine can encode a letter to itself
-    # An input letter self-encodes at the machine level when the plugboard and rotor send its signal to one of the reflector fixed points
-    # The reflector then returns the letter unchanged and the rotors and plugboard undo their scrambling from left to right
-    # Because below we use a fresh machine for each input letter, every fixed point will be hit and 
-    # so four letters should result in a self-coding output at the machine level
+    # An input letter self-encodes at the machine level when the plugboard and rotors send its signal to one of the reflector fixed points
+    # The reflector then returns the letter unchanged and the rotors and plugboard undo their scrambling from left to right.
+    # We use a fresh machine for each letter below to ensure that the rotor starting positions remain fixed, and
+    # each fixed point in the reflector is hit by exactly one of the inputs.
 
     self_coding_ref = "ABCDFGHIJKLMNOPQRSTUVWXYZE"                              # A, B, C and D map to themselves (fixed points)
     fixed_ref_points = [ALPHABET[i] for i, ch in enumerate(self_coding_ref) if ch == ALPHABET[i]]
@@ -104,9 +104,8 @@ def enhanced_enigma_testing():
         return mach.encode_character(c) == c
 
     self_coding_letters = [c for c in ALPHABET if self_encoding(c)]
-    assert len(self_coding_letters) == len(fixed_ref_points), (f"""For each of the {len(fixed_ref_points)} self-coding reflector letters, 
-                                                              there should be an equal number of self-coding output letters, but in this case {len(self_coding_letters)} produced:
-                                                              {self_coding_letters}.""")
+    assert len(self_coding_letters) == len(fixed_ref_points), (f"Expected to get: {len(fixed_ref_points)} machine-level self-coding letters "
+                                                               f"but got: {len(self_coding_letters)} which are: {self_coding_letters}.")
     print(f"Test 3 passes: the EnhancedEnigmaMachine self-encodes {self_coding_letters}.")
 
     # Test 4: Removing the reciprocal coding constraint.
