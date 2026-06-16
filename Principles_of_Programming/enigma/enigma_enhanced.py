@@ -18,7 +18,9 @@ class EnhancedReflector(Reflector):
         """
         :param name: The name of the reflector e.g. 'A_enhanced'
         :param wiring: The 26-letter permutation string where each letter A-Z appears only one. 
-        :raised ValueError: If the wiring does not conform to the 26-alphabetic-letter, no repetition wiring requirement. 
+        :raises ValueError: If the wiring does not contain exactly 26 characters. 
+        :raises ValueError: If the wiring does not contain only alphabetical characters. 
+        :raises ValueError: If the wiring is not a permutation of the 26 alphabetical letters A to Z
         """
         wiring = wiring.upper()
     
@@ -26,8 +28,8 @@ class EnhancedReflector(Reflector):
             raise ValueError("Reflector wiring needs to be exactly 26 letters.")
         if not wiring.isalpha():
             raise ValueError("Reflector wiring can only contain alphabetic characters.")
-        if len(set(wiring)) != 26:
-            raise ValueError("The Reflector wiring can only contain each of the 26 alphabetic letters, once. ")
+        if set(wiring) != set(ALPHABET):
+            raise ValueError("Reflector wiring must be a permutation of the alphabet, A-Z.")
     
         # Set attributes directly for this sub-class to skip the stricter superclass logic that only checks for REFLECTOR_NAMES 'A', 'B' or 'C'
         self.name = name

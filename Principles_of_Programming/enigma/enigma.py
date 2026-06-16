@@ -177,7 +177,7 @@ class Reflector:
         :raises ValueError: If the name is not a valid reflector name and only standard wiring was provided.
         :raises ValueError: If the non-standard reflector wiring is not exactly 26 characters.
         :raises ValueError: If the non-standard reflector wiring do not only contain alphabetical characters.
-        :raises ValueError: If the non-standard reflector wiring does not contain only one entry for each letter.
+        :raises ValueError: If the non-standard reflector wiring is not a permutation of the 26 alphabetical letters A to Z.
         :raises ValueError: If the non-standard reflector wiring attempts to encode a letter to itself
         """
         if non_standard_wiring is not None:
@@ -187,7 +187,7 @@ class Reflector:
             if not non_standard_wiring.isalpha():
                 raise ValueError("Reflector wiring needs to only consist of alphabetical letters.")
             if set(non_standard_wiring) != set(ALPHABET):
-                raise ValueError("Reflector wiring must be a permutation fo the alphabet, A-Z.")
+                raise ValueError("Reflector wiring must be a permutation of the alphabet, A-Z.")
             # In the standard reflector no letter can map to itself
             for i, maps in enumerate(non_standard_wiring):
                 if maps == ALPHABET[i]:
