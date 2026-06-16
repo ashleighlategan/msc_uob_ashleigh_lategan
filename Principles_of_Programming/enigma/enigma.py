@@ -186,8 +186,8 @@ class Reflector:
                 raise ValueError("Reflector wiring needs to be exactly 26 letters.")
             if not non_standard_wiring.isalpha():
                 raise ValueError("Reflector wiring needs to only consist of alphabetical letters.")
-            if len(set(non_standard_wiring)) !=26:
-                raise ValueError("Reflector wiring must contain each letter only once.")
+            if set(non_standard_wiring) != set(ALPHABET)
+                raise ValueError("Reflector wiring must be a permutation fo the alphabet, A-Z.")
             # In the standard reflector no letter can map to itself
             for i, maps in enumerate(non_standard_wiring):
                 if maps == ALPHABET[i]:
