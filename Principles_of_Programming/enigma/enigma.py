@@ -186,7 +186,7 @@ class Reflector:
                 raise ValueError("Reflector wiring needs to be exactly 26 letters.")
             if not non_standard_wiring.isalpha():
                 raise ValueError("Reflector wiring needs to only consist of alphabetical letters.")
-            if set(non_standard_wiring) != set(ALPHABET)
+            if set(non_standard_wiring) != set(ALPHABET):
                 raise ValueError("Reflector wiring must be a permutation fo the alphabet, A-Z.")
             # In the standard reflector no letter can map to itself
             for i, maps in enumerate(non_standard_wiring):
@@ -510,6 +510,46 @@ if __name__ == "__main__":
     try:
         Reflector("F")
         assert False, "Invalid Reflector name, should have raised ValueError"
+    except ValueError:
+        pass
+
+    # Non_standard_wiring Testing:
+
+    # Using a valid non_standard_wiring string
+    custom_ref = Reflector("custom", "GQMWJEIFNOZPVLBUTXRSAKCYHD")
+    assert custom_ref.encode("A") =="G"
+    assert custom_ref.encode("D") =="W"
+
+    # No letter should map to itself for the standard Enigma machine refelctor wiring
+    for c in ALPHABET:
+        assert custom_ref.encode(c) != c
+
+    # Using self-coding reflector wiring should raise a ValueError
+    try:
+        Reflector("self_code_ref", "QCYLXWDVZRIOUGEMKTSNAPJBHF")                            # S maps to itself
+        assert False, "Should have raised a ValueError for self-coding reflector wiring."
+    except ValueError:
+        pass
+
+    # Wiring that does not contain 26 alphabetical letters
+    try:
+        Reflector("short_ref", "QCYLX")
+        assert False, "Wiring that is no 26 alphabetical letters long, should raise a ValueError"
+    except ValueError:
+        pass
+
+    # Wiring that contains non-alphabetical character(s) should raise a ValueError
+    try:
+        Reflector("non_alpha_ref","5JMZALYXVBWFCRQUONTSPIKHGD")                             # 5 instead of the letter E
+        assert False, "Wiring that does not contain 26 alphabetical characters should raise a ValueError"
+    except ValueError:
+        pass
+
+    # Wiring that contains repeat letters
+
+    try:
+        Reflector("repeat_ref", "EJMZELYXVBWFCRQUONTSPIKHGD")                                # 2 Letter Es
+        assert False, "Wiring should only have 1 character for each letter of the alphabet, A-Z"
     except ValueError:
         pass
 
