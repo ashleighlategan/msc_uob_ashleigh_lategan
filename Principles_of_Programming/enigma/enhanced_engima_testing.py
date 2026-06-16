@@ -2,8 +2,8 @@ import math
 from enigma import EnigmaMachine, Reflector, ALPHABET
 from enigma_enhanced import EnhancedReflector, EnhancedEnigmaMachine
 
-# In the original A reflector wiring E mapped to A and A mapped to E and 
-# J mapped to B and B mapped to J
+# In the original A reflector wiring E mapped to A and A mapped to E 
+# and J mapped to B and B mapped to J
 # In the new A wiring, J maps to A but A still maps to E, and
 # E maps to B but B still maps to J
 NEW_A_WIRING = "JEMZALYXVBWFCRQUONTSPIKHGD"
@@ -13,8 +13,7 @@ def enhanced_reflector_testing():
 
     # Construct an instance
     
-    enhanced_reflector_name = "New_A"
-    ref = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING)
+    ref = EnhancedReflector("New_A", NEW_A_WIRING)
     assert ref.name == "New_A"
     assert ref.wiring == NEW_A_WIRING
 
@@ -82,30 +81,51 @@ def enhanced_enigma_testing():
 
     self_coding_wiring = ALPHABET
     ref_self_code = EnhancedReflector("self-code refelctor", self_coding_wiring)
-    assert ref_self_code.encode("A") == "A", ("""A letter should be able to encode to itself using the EnhancedReflector 
-                                                  with the necessary wiring provided.""")
+    assert ref_self_code.encode("A") == "A",\
+        ("A letter should be able to encode to itself using the EnhancedReflector with the necessary wiring provided.")
         
     print("Test 2 passed showing that the enhanced reflector does not have the non-self-coding constraint.")
 
-    # Test 3: Removing the reciprocal coding constraint.
+    # Test 3: The EnhancedEnigmaMachine can encode a letter to itself
+    # An input letter self-encodes at the machine level when the plugboard and rotor send its signal to one of the reflector fixed points
+    # The reflector then returns the letter unchanged and the rotors and plugboard undo their scrambling from left to right
+    # Because below we use a fresh machine for each input letter, every fixed point will be hit and 
+    # so four letters should result in a self-coding output at the machine level
+
+    self_coding_ref = "ABCDFGHIJKLMNOPQRSTUVWXYZE"                              # A, B, C and D map to themselves (fixed points)
+    fixed_ref_points = [ALPHABET[i] for i, ch in enumerate(self_coding_ref) if ch == ALPHABET[i]]
+
+    def self_encoding(c: str) -> bool:
+        mach = EnhancedEnigmaMachine(['Beta', 'II', 'V'],
+                                     EnhancedReflector("fixed_reflector", self_coding_ref),
+                                     [1, 1, 1],
+                                     "AAA"
+                                     )
+        return mach.encode_character(c) == c
+
+    self_coding_letters = [c for c in ALPHABET if self_encoding(c)]
+    assert len(self_coding_letters) == len(fixed_ref_points), (f"""For each of the {len(fixed_ref_points)} self-coding reflector letters, 
+                                                              there should be an equal number of self-coding output letters, but in this case {len(self_coding_letters)} produced:
+                                                              {self_coding_letters}.""")
+    print(f"Test 3 passes: the EnhancedEnigmaMachine self-encodes {self_coding_letters}.")
+
+    # Test 4: Removing the reciprocal coding constraint.
     # The standard enigma machine was symmetrical such that encoding and decoding were the same with the same machine settings.
     # For example inputting a character "A" encodes to "D" and at the same settings, "D" then encodes back to "A".
     # The EnhancedEnigmaMachine does not have this feature so encoding a input character and then encoding the output should not return the same input character.
-    
-    enhanced_reflector_name = "New_A"
 
     # Two separate machines are required for this test since the relevant rotor(s) advance with each keypress.
     # If the same machine was reused, it would be starting off at the wrong rotor position(s).
 
     enhanced_machine_1 = EnhancedEnigmaMachine(
         rotor_names = ["Beta", 'II', 'V'],
-        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        reflector = EnhancedReflector("New_A", NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
         )
     enhanced_machine_2 = EnhancedEnigmaMachine(
         rotor_names = ["Beta", 'II', 'V'],
-        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        reflector = EnhancedReflector("New_A", NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
         )
@@ -114,15 +134,15 @@ def enhanced_enigma_testing():
                                             == c for c in ALPHABET)
     assert not reciprocal_constraint_present, ("The EnhancedEnigmaMachine's encode is not self-inverse.")
 
-    print("Test 3 passed: The EnhancedEnigmaMachine no longer features the reciprocal coding constraint" )
+    print("Test 4 passed: The EnhancedEnigmaMachine no longer features the reciprocal coding constraint" )
 
-    # Test 4: Checking decode produces the original input
+    # Test 5: Checking decode produces the original input
     # such that decode(encode(text)) == text
-    # Like in test 3 we require 2 separate machines to test this, since the relevant rotor(s) will advance with each keypress. 
+    # Like in test 4 we require 2 separate machines to test this, since the relevant rotor(s) will advance with each keypress. 
 
     encoding_machine = EnhancedEnigmaMachine(
         rotor_names = ["Beta", 'II', 'V'],
-        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        reflector = EnhancedReflector("New_A", NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
         plugboard_pairs = ['AB', 'EF', 'XY'],  
@@ -130,7 +150,7 @@ def enhanced_enigma_testing():
     
     decoding_machine = EnhancedEnigmaMachine(
         rotor_names = ["Beta", 'II', 'V'],
-        reflector = EnhancedReflector(enhanced_reflector_name, NEW_A_WIRING),
+        reflector = EnhancedReflector("New_A", NEW_A_WIRING),
         ring_settings = [1, 1, 1],
         starting_positions = "AAA",
         plugboard_pairs = ['AB', 'EF', 'XY'],  
@@ -143,9 +163,9 @@ def enhanced_enigma_testing():
     assert decrypted_text == input_text, (f""" Decoding the encrypted_text should return {input_text}, 
                                               result was: {decrypted_text}.""")
     
-    print("Test 4 passed showing that the separate decode method works to return the input string for the same machine settings")
+    print("Test 5 passed showing that the separate decode method works to return the input string for the same machine settings")
 
-    # Test 5: The EnhancedEnigmaMachine reflector shouldn't work with a standard reflector
+    # Test 6: The EnhancedEnigmaMachine reflector shouldn't work with a standard reflector
 
     try:
         EnhancedEnigmaMachine(
@@ -159,7 +179,7 @@ def enhanced_enigma_testing():
     except ValueError:
         pass
     
-    print("Test 5 passed showing that the EnhancedEnigmaMachine will not work with a standard reflector.")
+    print("Test 6 passed showing that the EnhancedEnigmaMachine will not work with a standard reflector.")
     print("All EnhancedEnigmaMachine tests have been passed!")
 
     # Analysis of the key space for the standard EnigmaMachine vs the EnhancedEnigmaMachine     
