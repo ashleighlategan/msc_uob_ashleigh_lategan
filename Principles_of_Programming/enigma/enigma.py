@@ -149,7 +149,12 @@ class Rotor:
         self.position = (self.position + 1) % 26
     
     def encode_right_to_left(self, character: str) -> str:   
-        """ Encode input character passing from the rightmost rotor to the leftmost rotor (towards reflector) """
+        """ 
+        Encode input character passing from the rightmost rotor to the leftmost rotor (towards reflector) 
+        
+        :param character: A single letter of any case.
+        :return: An encoded uppercase letter after the effects of the rotor wiring and any offsets.
+        """
         alpha_idx = ALPHA_TO_IDX[character.upper()]
         shifted = (alpha_idx + self.position - self.ring_offset) % 26
         wired = ALPHA_TO_IDX[self.wiring[shifted]]
@@ -157,7 +162,12 @@ class Rotor:
         return ALPHABET[output]  
     
     def encode_left_to_right(self, character: str) -> str:
-        """ Encode input character passing from the leftmost rotor to the rightmost rotor (away from reflector)"""
+        """ 
+        Encode input character passing from the leftmost rotor to the rightmost rotor (away from reflector)
+
+        :param character: A single letter of any case.
+        :return: An encoded uppercase letter after the effects of the rotor wiring and any offsets.
+        """
         alpha_idx = ALPHA_TO_IDX[character.upper()]
         shifted = (alpha_idx + self.position - self.ring_offset) % 26
         wired = self.reverse_wiring[ALPHABET[shifted]]
