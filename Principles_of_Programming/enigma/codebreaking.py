@@ -1,15 +1,15 @@
-from enigma import EnigmaMachine, Reflector, REFLECTOR_NAMES, ALPHABET, REFLECTOR_WIRING, ALPHA_TO_IDX
+from enigma import EnigmaMachine, Reflector, ALPHABET, REFLECTOR_WIRING, ALPHA_TO_IDX
 from itertools import permutations, product, combinations
 
 def solution_code_1():
     crib = 'SECRETS'
     code_text = 'DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ'
 
-    for reflector in REFLECTOR_WIRING:
+    for reflector_name in REFLECTOR_WIRING:
         
         enigma_machine = EnigmaMachine(
             rotor_names = ["Beta","Gamma","V"],
-            reflector = Reflector(reflector),
+            reflector = Reflector(reflector_name),
             ring_settings= [4, 2, 14],
             starting_positions = "MJM",
             plugboard_pairs = ["KI", "XN", "FL"],
@@ -17,7 +17,7 @@ def solution_code_1():
         output = enigma_machine.encode_string(code_text)
 
         if crib in output:
-            print(f"Code 1, uses Reflector: {reflector}, Decoded text: {output}")
+            print(f"Code 1, uses Reflector: {reflector_name}, Decoded text: {output}")
 
 def solution_code_2():
     crib = 'UNIVERSITY'
@@ -51,11 +51,11 @@ def solution_code_3():
     crib_matches = []       
 
     for rotors_used in permutations(valid_rotor_names, 3):
-        for reflector_used in REFLECTOR_WIRING:
+        for reflector_name in REFLECTOR_WIRING:
             for ring_settings_used in product(valid_ring_settings, repeat=3):
                 enigma_machine = EnigmaMachine(
                     rotor_names = list(rotors_used),
-                    reflector = Reflector(reflector_used),
+                    reflector = Reflector(reflector_name),
                     ring_settings= list(ring_settings_used),
                     starting_positions = "EMY",
                     plugboard_pairs = ["FH", "TS", "BE", "UQ", "KD", "AL"],
@@ -64,7 +64,7 @@ def solution_code_3():
                 if crib in output:
                     crib_matches.append({
                         "rotor_names": rotors_used, 
-                        "reflector name": reflector_used, 
+                        "reflector name": reflector_name, 
                         "ring_settings": ring_settings_used,
                         "output": output
                         })
