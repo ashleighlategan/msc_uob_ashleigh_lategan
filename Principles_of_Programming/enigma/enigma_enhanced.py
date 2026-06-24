@@ -43,7 +43,7 @@ class EnhancedReflector(Reflector):
         self.inverse_wiring: dict[str, str] = {char: ALPHABET[i] for i, char in enumerate(wiring)}
 
     def __repr__(self) -> str:
-        return f"EnhancedReflector(name='{self.name}', wiring='{self.wiring}')"    
+        return f"EnhancedReflector(name='{self.name}', wiring='{self.wiring}')"    # show the wiring as well as the name, since the wiring will always be custom so it cannot be looked up
         
     def decode(self, character: str) -> str:
         """

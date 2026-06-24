@@ -217,7 +217,10 @@ class Reflector:
             self.wiring = REFLECTOR_WIRING[name]
    
     def __repr__(self) -> str:
-        return f"Reflector('{self.name}')"
+        if self.wiring == REFLECTOR_WIRING.get(self.name):
+            return f"Reflector(name = '{self.name}')"
+        # for a reflector with custom wiring, show the wiring as well as the name, since the wiring cannot be looked up
+        return f"Reflector(name='{self.name}', non_standard_wiring='{self.wiring}')"
 
     def encode(self, character: str) -> str:
         """ Encode input character through the reflector's wiring.
