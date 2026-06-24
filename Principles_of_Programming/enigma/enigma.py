@@ -218,7 +218,7 @@ class Reflector:
    
     def __repr__(self) -> str:
         if self.wiring == REFLECTOR_WIRING.get(self.name):
-            return f"Reflector(name = '{self.name}')"
+            return f"Reflector(name='{self.name}')"
         # for a reflector with custom wiring, show the wiring as well as the name, since the wiring cannot be looked up
         return f"Reflector(name='{self.name}', non_standard_wiring='{self.wiring}')"
 
@@ -659,7 +659,7 @@ if __name__ == "__main__":
     assert repr(Rotor("III", "E", 3)) == "Rotor(name='III', position='E', ring_setting=3)"
     
     # Reflector
-    assert repr(Reflector("C")) == "Reflector('C')"
+    assert repr(Reflector("C")) == "Reflector(name='C')"
 
     # EnigmaMachine
     assert repr(EnigmaMachine(["Gamma", "V", "I"], Reflector("C"), [2,1,1], "AAZ"))
