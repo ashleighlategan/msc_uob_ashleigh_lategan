@@ -77,10 +77,10 @@ def enhanced_enigma_testing():
     # Test 2: Removing the non-self-coding constraint
     # The standard enigma machine cannot have a letter map to itself.
     # The EnhancedEnigma machine is setup such that it no longer has this restriction 
-    # We need to check that passing wiring for the refelctor where a letter maps to itself, is accepted
+    # We need to check that passing wiring for the reflector where a letter maps to itself, is accepted
 
     self_coding_wiring = ALPHABET
-    ref_self_code = EnhancedReflector("self-code refelctor", self_coding_wiring)
+    ref_self_code = EnhancedReflector("self-code reflector", self_coding_wiring)
     assert ref_self_code.encode("A") == "A",\
         ("A letter should be able to encode to itself using the EnhancedReflector with the necessary wiring provided.")
         
@@ -249,7 +249,7 @@ def thimbleby_fig_2_test():
 
 def key_space_calc():
     """
-    Calculates the letter-permutation ey space for the standard EnigmaMachine and the EnhancedEnigmaMachine, 
+    Calculates the letter-permutation key space for the standard EnigmaMachine and the EnhancedEnigmaMachine, 
     to quantify the effect that the self-coding and reciprocal coding weaknesses 
     had on the standard machine (Thimbleby, 2016).
 
