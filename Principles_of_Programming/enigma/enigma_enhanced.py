@@ -17,7 +17,7 @@ class EnhancedReflector(Reflector):
     def __init__(self, name:str, wiring: str) -> None:
         """
         :param name: The name of the reflector e.g. 'A_enhanced'
-        :param wiring: The 26-letter permutation string where each letter A-Z appears only one. 
+        :param wiring: The 26-letter permutation string where each letter A-Z appears only once. 
         :raises ValueError: If the wiring does not contain exactly 26 characters. 
         :raises ValueError: If the wiring does not contain only alphabetical characters. 
         :raises ValueError: If the wiring is not a permutation of the 26 alphabetical letters A to Z
@@ -103,7 +103,7 @@ class EnhancedEnigmaMachine(EnigmaMachine):
                 
         signal = self.plugboard.encode(character)
 
-        for rotor in reversed(self.rotors):                 # reversed works through the rotor list form right to left
+        for rotor in reversed(self.rotors):                 # reversed works through the rotor list from right to left
             signal = rotor.encode_right_to_left(signal)
                     
         signal = self.reflector.decode(signal)              # reflector using its inverse mapping
