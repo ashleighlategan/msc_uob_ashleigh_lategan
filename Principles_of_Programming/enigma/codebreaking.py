@@ -4,6 +4,7 @@ from itertools import permutations, product, combinations
 def solution_code_1():
     crib = 'SECRETS'
     code_text = 'DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ'
+    crib_matches = []       # empty list to store any outputs that contain the crib
 
     for reflector_name in REFLECTOR_WIRING:
         
@@ -17,7 +18,11 @@ def solution_code_1():
         output = enigma_machine.encode_string(code_text)
 
         if crib in output:
-            print(f"Code 1, uses Reflector: {reflector_name}, Decoded text: {output}")
+            crib_matches.append({"reflector": reflector_name, "output": output})
+        
+    for match in crib_matches:
+        print(f"Code 1, uses Reflector: {match['reflector']}, Decoded text: {match['output']}")
+    return crib_matches
 
 def solution_code_2():
     crib = 'UNIVERSITY'
@@ -130,16 +135,16 @@ def solution_code_5():
                     continue
                 for swap_1 in range(2):
                     (a1, a2) = first_choice[0]      # 1st pair e.g. ('C', 'M') where a1 = 'C' and a2 = 'M'
-                    (b1, b2) = first_choice[1]      # 2nd pair e.g. ('F', 'P') where a1 = 'F' and a2 = 'P'
+                    (b1, b2) = first_choice[1]      # 2nd pair e.g. ('F', 'P') where b1 = 'F' and b2 = 'P'
                     if swap_1 ==0:                  # becomes ('C','P'), ('F','M')
                         new_pairs_1 = [(a1, b2), (b1, a2)]
                     else:                           # becomes ('C','F'), ('M','P')
                         new_pairs_1 = [(a1, b1), (a2, b2)]
 
                     for swap_2 in range(2):
-                        (c1, c2) = second_choice[0]      # 1st pair e.g. ('B', 'R') where a1 = 'B' and a2 = 'R'
-                        (d1, d2) = second_choice[1]      # 2nd pair e.g. ('D', 'Z') where a1 = 'D' and a2 = 'Z'    
-                        if swap_2 ==0:                  # becomes ('B','Z'), ('D','R)
+                        (c1, c2) = second_choice[0]      # 1st pair e.g. ('B', 'R') where c1 = 'B' and c2 = 'R'
+                        (d1, d2) = second_choice[1]      # 2nd pair e.g. ('D', 'Z') where d1 = 'D' and d2 = 'Z'    
+                        if swap_2 ==0:                  # becomes ('B','Z'), ('D','R')
                             new_pairs_2 = [(c1, d2), (d1, c2)]
                         else:                           # becomes ('B','D'), ('R','Z')
                             new_pairs_2 = [(c1, d1), (c2, d2)]
