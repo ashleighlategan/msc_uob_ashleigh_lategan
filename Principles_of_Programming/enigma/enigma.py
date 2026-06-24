@@ -317,7 +317,7 @@ class EnigmaMachine:
 
         signal = self.plugboard.encode(character)
 
-        for rotor in reversed(self.rotors):                     # reversed works through the rotor list form right to left
+        for rotor in reversed(self.rotors):                     # reversed works through the rotor list from right to left
             signal = rotor.encode_right_to_left(signal)
 
         signal = self.reflector.encode(signal)                  # reflector
