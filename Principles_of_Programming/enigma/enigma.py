@@ -120,10 +120,16 @@ class Rotor:
         :param name: Rotor name e.g. 'Gamma', 'III' 
         :param position: Starting letter (defaults to 'A')
         :param ring_setting: Ring setting 1-26 (default 1, no offset)
-        :raises ValueError: If an invalid rotor name is used. 
+        :raises ValueError: If an invalid rotor name is used
+        :raises ValueError: If an invalid position is provided
+        :raises ValueError: If an invalid ring setting is used
         """
         if name not in ROTOR_NAMES:
-            raise ValueError(f"Unknown rotor name {name} used. Must be Beta, Gamma, I, II, III, IV or V.")
+            raise ValueError(f"Unknown rotor name {name!r} used. Must be Beta, Gamma, I, II, III, IV or V.")
+        if len(position) != 1 or not position.isalpha():
+            raise ValueError(f"Invalid rotor position {position!r} provided, rotor position should be one alphabetical letter of any case.")
+        if not isinstance(ring_setting, int) or not (1 <= int(ring_setting) <= 26):
+            raise ValueError(f"Invalid ring setting {ring_setting!r} provided, ring setting should be a single integer from 1 to 26.")
         self.name = name
         self.wiring = ROTOR_WIRING[name]
         self.reverse_wiring =  {c:i for i,c in enumerate(self.wiring)}  # maps each character to its position in the wiring string for O(1) left-to-right lookup
@@ -249,11 +255,15 @@ class EnigmaMachine:
         :param starting_positions: Starting position as letters, for each rotor e.g. "AAZ".
         :param plugboard_pairs: Optional list of 2-char plug pairs e.g ["CT", "EZ"].
         :raises ValueError: If the number of rotors is not 3 or 4.
+        :raises ValueError: If the rotors provided are not unique. 
         :raises ValueError: If the number of ring settings is not equivalent to the number of rotors.
         :raises ValueError: If the number of starting positions is not equivalent to the number of rotors.
         """
         if len(rotor_names) not in (3,4):
             raise ValueError("Enigma machines require 3 or 4 rotors.")
+        if len(rotor_names) != len(set(rotor_names)):
+            repeated_rotors = {name for name in rotor_names if rotor_names.count(name) > 1}
+            raise ValueError(f"Enigma machines can only use each valid rotor once, please correct the repeated rotors: {repeated_rotors}")
         if len(ring_settings) != len(rotor_names):
             raise ValueError("Need to supply ring setting for each rotor.")
         if len(starting_positions) != len(rotor_names):
