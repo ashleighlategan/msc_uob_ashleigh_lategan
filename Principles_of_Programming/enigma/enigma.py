@@ -117,9 +117,9 @@ class Rotor:
     """
     def __init__(self, name: str, position: str = "A", ring_setting: int = 1) -> None:
         """
-        :param name: Rotor name e.g. 'Gamma', 'III' 
-        :param position: Starting letter (defaults to 'A')
-        :param ring_setting: Ring setting 1-26 (default 1, no offset)
+        :param name: Rotor name, case-sensitive that must exactly match one of the known rotors  e.g. 'Gamma', 'III'
+        :param position: Starting letter (defaults to 'A') of any case for user convenience
+        :param ring_setting: Ring setting as an integer 1-26 (default to 1 which does not apply a wiring offset)
         :raises ValueError: If an invalid rotor name is used
         :raises ValueError: If an invalid position is provided
         :raises ValueError: If an invalid ring setting is used
@@ -315,8 +315,12 @@ class EnigmaMachine:
         plugboard -> rotors (right to left) -> reflector -> rotors (left to right) -> plugboard
         Rotors will step before the signal passes through them. 
 
+        This method requires the input character to be a letter, triggering a ValueError if this is not the case. 
+        This is different compared to encode_string, which for user convenience will ignore non-alphabetical characters. 
+
         :param character: An uppercase or lowercase letter
         :return: Encoded uppercase letter
+        :raises ValueError: if the input character is not an alphabetical letter
         """
 
         character = character.upper()
@@ -340,7 +344,9 @@ class EnigmaMachine:
     def encode_string(self, text:str) -> str:
         """
         Encode a string of characters, still advancing the relevant rotors with each keypress. 
-        Any non-alphabetical characters are ignored as the Enigma machine only processes letters.
+        Any non-alphabetical characters (punctuation, spaces, numbers) are ignored as the Enigma machine only processes letters.
+        This is done for user convenience so that users can encrypt and decrypt strings, without needing to pre-format them. 
+        This was not implemented for encode_character as there we stay true to Enigma functionality and flag a ValueError for incorrect input. 
         
         :param text: Encrypted or decrypted text of any case
         :return: Encoded or decoded uppercase text
