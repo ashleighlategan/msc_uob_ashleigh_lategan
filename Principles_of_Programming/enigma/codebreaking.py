@@ -1,11 +1,11 @@
-from enigma import EnigmaMachine, Reflector, REFLECTOR_NAMES, ALPHABET, ROTOR_WIRING, ALPHA_TO_IDX
+from enigma import EnigmaMachine, Reflector, REFLECTOR_NAMES, ALPHABET, REFLECTOR_WIRING, ALPHA_TO_IDX
 from itertools import permutations, product, combinations
 
 def solution_code_1():
     crib = 'SECRETS'
     code_text = 'DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ'
 
-    for reflector in REFLECTOR_NAMES:
+    for reflector in REFLECTOR_WIRING:
         
         enigma_machine = EnigmaMachine(
             rotor_names = ["Beta","Gamma","V"],
@@ -51,7 +51,7 @@ def solution_code_3():
     crib_matches = []       
 
     for rotors_used in permutations(valid_rotor_names, 3):
-        for reflector_used in REFLECTOR_NAMES:
+        for reflector_used in REFLECTOR_WIRING:
             for ring_settings_used in product(valid_ring_settings, repeat=3):
                 enigma_machine = EnigmaMachine(
                     rotor_names = list(rotors_used),
@@ -119,8 +119,8 @@ def solution_code_5():
     code_text = 'HWREISXLGTTBYVXRCWWJAKZDTVZWKBDJPVQYNEQIOTIFX' 
     crib_matches = [] 
 
-    for reflector_name in REFLECTOR_NAMES:
-        wiring = ROTOR_WIRING[reflector_name]
+    for reflector_name in REFLECTOR_WIRING:
+        wiring = REFLECTOR_WIRING[reflector_name]
         pairs = [ (ALPHABET[i], wiring[i]) for i in range(26) if ALPHABET[i] < wiring[i]]
         checked_wires = set()                          # each reflector gets a new set
 

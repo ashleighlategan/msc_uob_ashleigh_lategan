@@ -83,20 +83,20 @@ ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 ALPHA_TO_IDX= {c: i for i, c in enumerate(ALPHABET)}    # O(1) alphabet character to index lookup
 
 ROTOR_WIRING = {
-    "Beta":  "LEYJVCNIXWPBQMDRTAKZGFUHOS",              # Rotors Beta, Gamma and I-V
+    "Beta":  "LEYJVCNIXWPBQMDRTAKZGFUHOS",              
     "Gamma": "FSOKANUERHMBTIYCWLQPZXVGJD",
     "I":     "EKMFLGDQVZNTOWYHXUSPAIBRCJ",
     "II":    "AJDKSIRUXBLHWTMCQGZNPYFVOE",
     "III":   "BDFHJLCPRTXVZNYEIWGAKMUSQO",
     "IV":    "ESOVPZJAYQUIRHXLNFTGKDCMWB",
     "V":     "VZBRGITYUPSDNHLXAWMJQOFECK",
-    "A":     "EJMZALYXVBWFCRQUONTSPIKHGD",              # reflector A, B, C
-    "B":     "YRUHQSLDPXNGOKMIEBFZCWVJAT", 
-    "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",  
 }
 
-ROTOR_NAMES = frozenset({"Beta", "Gamma", "I", "II", "III", "IV", "V"})
-REFLECTOR_NAMES = frozenset({"A", "B", "C"})
+REFLECTOR_WIRING = {
+    "A":     "EJMZALYXVBWFCRQUONTSPIKHGD",             
+    "B":     "YRUHQSLDPXNGOKMIEBFZCWVJAT", 
+    "C":     "FVPJIAOYEDRZXWGCTKUQSBNMHL",
+}
 
 # Notch positions for rotors I to V (when rotor is at its notch, the next keypress triggers the rotor to its left)
 ROTOR_NOTCH = {"I": "Q", "II": "E", "III": "V", "IV": "J", "V": "Z"}
@@ -124,7 +124,7 @@ class Rotor:
         :raises ValueError: If an invalid position is provided
         :raises ValueError: If an invalid ring setting is used
         """
-        if name not in ROTOR_NAMES:
+        if name not in ROTOR_WIRING:
             raise ValueError(f"Unknown rotor name {name!r} used. Must be Beta, Gamma, I, II, III, IV or V.")
         if len(position) != 1 or not position.isalpha():
             raise ValueError(f"Invalid rotor position {position!r} provided, rotor position should be one alphabetical letter of any case.")
@@ -211,10 +211,10 @@ class Reflector:
             self.name = name
             self.wiring = non_standard_wiring
         else:
-            if name not in REFLECTOR_NAMES:
+            if name not in REFLECTOR_WIRING:
                 raise ValueError(f"Unknown reflector name {name} used. Must be A, B or C.") 
             self.name = name
-            self.wiring = ROTOR_WIRING[name]
+            self.wiring = REFLECTOR_WIRING[name]
    
     def __repr__(self) -> str:
         return f"Reflector('{self.name}')"
