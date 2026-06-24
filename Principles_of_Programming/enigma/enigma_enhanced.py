@@ -1,4 +1,4 @@
-from enigma import (Reflector, EnigmaMachine, ALPHABET, ALPHA_TO_IDX)
+from enigma import (Reflector, EnigmaMachine, ALPHABET)
 
 class EnhancedReflector(Reflector):
     """ 
