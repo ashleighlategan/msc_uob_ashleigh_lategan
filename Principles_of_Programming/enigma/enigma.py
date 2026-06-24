@@ -520,7 +520,7 @@ if __name__ == "__main__":
     assert custom_ref.encode("A") =="G"
     assert custom_ref.encode("D") =="W"
 
-    # No letter should map to itself for the standard Enigma machine refelctor wiring
+    # No letter should map to itself for the standard Enigma machine reflector wiring
     for c in ALPHABET:
         assert custom_ref.encode(c) != c
 
