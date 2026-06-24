@@ -88,7 +88,7 @@ def solution_code_4():
         rotor_names = ['V', 'III', 'IV'],
         reflector = Reflector('A'),
         ring_settings= [24, 12, 10],
-        starting_positions = "EMY",
+        starting_positions = "SWU",
         plugboard_pairs = test_pairs,
         )
     output = enigma_machine.encode_string(code_text)
