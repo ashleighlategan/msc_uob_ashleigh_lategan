@@ -647,7 +647,7 @@ if __name__ == "__main__":
     # Incorrect use of a M4-reflector with a 3-rotor M3 Enigma machine, should raise an error:
     try:
         EnigmaMachine(rotor_names=["I", "II", "IV"], reflector= Reflector("UKW-c"), ring_settings=[1, 1, 1], starting_positions="AAA")
-        assert False, "Incorrect use of a M4 refelctor in an M3 machine, should have raised ValueError"
+        assert False, "Incorrect use of a M4 reflector in an M3 machine, should have raised ValueError"
     except ValueError:
         pass
 
