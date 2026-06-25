@@ -291,7 +291,7 @@ class EnigmaMachine:
             raise ValueError("Need to supply starting position for each rotor.")
         m4_reflector_names = ("UKW-b", "UKW-c") 
         if reflector.name in m4_reflector_names and len(rotor_names) != 4:
-            raise ValueError("This M4 reflector {reflector.name!r} can only be used in a 4-rotor Enigma Machine.")
+            raise ValueError(f"This M4 reflector {reflector.name!r} can only be used in a 4-rotor Enigma Machine.")
         
         self.rotors = [ 
             Rotor(name, pos, ring_set)
@@ -512,10 +512,24 @@ if __name__ == "__main__":
     rotor.rotate()
     assert ALPHABET[rotor.position] == "A"
 
-    # Invalid Rotor name should raise a ValueError
+    # Invalid Rotor name provided should raise a ValueError
     try:
         Rotor("X")
         assert False, "Invalid Rotor name, should have raised ValueError"
+    except ValueError:
+        pass
+
+    # Invalid Rotor position provided should raise a ValueError
+    try:
+        Rotor("I", position = "AB")
+        assert False, "Invalid Rotor position, should have raised ValueError"
+    except ValueError:
+        pass
+
+    # Providing a ring setting that is outside of the 1-26 range should raise a ValueError
+    try:
+        Rotor("I", ring_setting = 27)
+        assert False, "Ring setting that is outside of the acceptable range, should have raised ValueError"
     except ValueError:
         pass
 
@@ -528,16 +542,18 @@ if __name__ == "__main__":
     assert Reflector("A").encode("H") == "X"
     assert Reflector("B").encode("G") == "L"
     assert Reflector("C").encode("E") == "I"
+    assert Reflector("UKW-b").encode("E") == "A"
+    assert Reflector("UKW-c").encode("R") == "A"
 
     # Reflector is self-inverse: encoding twice should return the original letter.
     # This is a core property of Enigma and it is what makes encryption and decryption symmetrical.
-    for name in ["A", "B", "C"]:
+    for name in ["A", "B", "C", "UKW-b", "UKW-c"]:
         reflector = Reflector(name)
         for c in ALPHABET:
             assert reflector.encode(reflector.encode(c)) == c
     
     # A letter can never map to itself, useful to test our wiring is correct:
-    for name in ["A", "B", "C"]:
+    for name in ["A", "B", "C", "UKW-b", "UKW-c"]:
         reflector = Reflector(name)
         for c in ALPHABET:
             assert reflector.encode(c) != c
@@ -618,6 +634,16 @@ if __name__ == "__main__":
         assert False, "Incorrect number of starting positions provided, should have raised ValueError"
     except ValueError:
         pass
+    
+    # Duplicate rotors used should raise a ValueError 
+    # The physical EnigmaMachine was only provided with one of each of the rotors:
+    # https://www.cryptomuseum.com/crypto/enigma/m3/index.htm
+    try:
+        EnigmaMachine(rotor_names=["II", "II", "V"], reflector= Reflector("C"), ring_settings=[1, 1, 1], starting_positions="AAA")
+        assert False, "If a rotor is used more than once it should have raised a ValueError"
+    except ValueError:
+        pass
+
     # Incorrect use of a M4-reflector with a 3-rotor M3 Enigma machine, should raise an error:
     try:
         EnigmaMachine(rotor_names=["I", "II", "IV"], reflector= Reflector("UKW-c"), ring_settings=[1, 1, 1], starting_positions="AAA")
@@ -665,6 +691,11 @@ if __name__ == "__main__":
     enigma_m4 = EnigmaMachine(rotor_names=["Gamma", "I", "II", "III"], reflector= Reflector("UKW-b"), ring_settings=[1, 1, 1, 1], starting_positions="AAAA")
     assert enigma_m4.encode_string("ASHLEIGH") == "SIYKGCCZ"
 
+    # Testing the Enigma machine to ensure that Plugboard pairs do switch the input letters ahead of the rotors
+    enigma_machine_plug = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA", plugboard_pairs=["TW", "IS", "AB"])
+    enigma_machine_no_plug = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
+    assert enigma_machine_plug.encode_string("ASHLEIGH") != enigma_machine_no_plug.encode_string("ASHLEIGH")
+
     # Self-inverse testing where we would expect that encoding the output should return the original character
     # We have to use two machine instances set at the same setting as using the same machine wouldn't work since the rotor(s) rotate
     enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
@@ -673,14 +704,18 @@ if __name__ == "__main__":
         assert enigma_machine_2.encode_character(enigma_machine_1.encode_character(c)) == c
 
     # Self-inverse testing for a string where we would expect that encoding the output should return the original string
-    # We have to use two machine instances set at the same setting as using the same machine wouldn't work since the rotor(s) rotate
     enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
     enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA")
     input_string = "HIMYNAMEISASHLEIGHLATEGAN"
     assert enigma_machine_1.encode_string(enigma_machine_2.encode_string(input_string)) == input_string
 
+    # Self-inverse testing for an Enigma machine using plugboard pairs
+    enigma_machine_1 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA", plugboard_pairs=["BG", "SL", "HE"])
+    enigma_machine_2 = EnigmaMachine(rotor_names=["I", "II", "III"], reflector= Reflector("B"), ring_settings=[1, 1, 1], starting_positions="AAA", plugboard_pairs=["BG", "SL", "HE"])
+    input_string = "HIMYNAMEISASHLEIGHLATEGAN"
+    assert enigma_machine_1.encode_string(enigma_machine_2.encode_string(input_string)) == input_string
+
     # Self-inverse testing for a string where we have a 4-rotor Machine (Enigma M4)
-    # We have to use two machine instances set at the same setting as using the same machine wouldn't work since the rotor(s) rotate
     enigma_m4_1 = EnigmaMachine(rotor_names=["Gamma", "I", "II", "III"], reflector= Reflector("UKW-b"), ring_settings=[1, 1, 1, 1], starting_positions="AAAA")
     enigma_m4_2 = EnigmaMachine(rotor_names=["Gamma", "I", "II", "III"], reflector= Reflector("UKW-b"), ring_settings=[1, 1, 1, 1], starting_positions="AAAA")
     input_string = "HIMYNAMEISASHLEIGHLATEGAN"
@@ -734,6 +769,10 @@ if __name__ == "__main__":
     
     # Reflector
     assert repr(Reflector("C")) == "Reflector(name='C')"
+
+    # A non-standard reflector should also include the custom wiring since we cannot look this up in the standard reflector wiring dictionary
+    custom_ref = Reflector("custom", "GQMWJEIFNOZPVLBUTXRSAKCYHD")
+    assert repr(custom_ref) == "Reflector(name='custom', non_standard_wiring='GQMWJEIFNOZPVLBUTXRSAKCYHD')"
 
     # EnigmaMachine
     assert repr(EnigmaMachine(["Gamma", "V", "I"], Reflector("C"), [2,1,1], "AAZ"))

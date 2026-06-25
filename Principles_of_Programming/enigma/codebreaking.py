@@ -2,14 +2,14 @@ from enigma import EnigmaMachine, Reflector, ALPHABET, REFLECTOR_WIRING, ALPHA_T
 from itertools import permutations, product, combinations
 # Added Reflector Names for the 3-rotor machine reflectors 
 # This was done to avoid the solutions below checking the two 4-rotor machine reflectors which would be wasted effort
-STANDARD_REFLECTOR_NAMES = ("A", "B", "C")
+M3_REFLECTOR_NAMES = ("A", "B", "C")
 
 def solution_code_1():
     crib = 'SECRETS'
     code_text = 'DMEXBMKYCVPNQBEDHXVPZGKMTFFBJRPJTLHLCHOTKOYXGGHZ'
     crib_matches = []       # empty list to store any outputs that contain the crib
 
-    for reflector_name in STANDARD_REFLECTOR_NAMES:
+    for reflector_name in M3_REFLECTOR_NAMES :
         
         enigma_machine = EnigmaMachine(
             rotor_names = ["Beta","Gamma","V"],
@@ -59,7 +59,7 @@ def solution_code_3():
     crib_matches = []       
 
     for rotors_used in permutations(valid_rotor_names, 3):
-        for reflector_name in STANDARD_REFLECTOR_NAMES:
+        for reflector_name in M3_REFLECTOR_NAMES:
             for ring_settings_used in product(valid_ring_settings, repeat=3):
                 enigma_machine = EnigmaMachine(
                     rotor_names = list(rotors_used),
@@ -127,8 +127,8 @@ def solution_code_5():
     code_text = 'HWREISXLGTTBYVXRCWWJAKZDTVZWKBDJPVQYNEQIOTIFX' 
     crib_matches = [] 
 
-    for reflector_name in STANDARD_REFLECTOR_NAMES:
-        wiring = REFLECTOR_WIRING[reflector_name]
+    for reflector_name in M3_REFLECTOR_NAMES:
+        wiring = REFLECTOR_WIRING[reflector_name]      # lookup wiring for the relevant reflector_name
         pairs = [ (ALPHABET[i], wiring[i]) for i in range(26) if ALPHABET[i] < wiring[i]]
         checked_wires = set()                          # each reflector gets a new set
 
