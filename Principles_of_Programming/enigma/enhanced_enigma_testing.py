@@ -49,6 +49,14 @@ def enhanced_reflector_testing():
     except ValueError:
         pass
 
+    # Testing wiring with non-alphabetical characters
+
+    try:
+        EnhancedReflector("reflector_short","7EMZALYXVBWFCRQUONTSPIKHGD")
+        assert False, "Should have raised a ValueError for non-alphabetical characters"
+    except ValueError:
+        pass
+
     # Testing repeated letters in wiring string
     try:
         EnhancedReflector("reflector_repeat", "JEMZBLYXVBWFCRQUONTSPIKHGD")             # B is repeated and A is missing
@@ -178,7 +186,19 @@ def enhanced_enigma_testing():
     except ValueError:
         pass
     
-    print("Test 6 passed showing that the EnhancedEnigmaMachine will not work with a standard reflector.")
+    print("Test 6 passed showing that the EnhancedEnigmaMachine will not work with a standard reflector.") 
+
+    # Test 7: decode_character and decode_string testing
+    # Like encode_character requires alphabetical letters
+
+    try: 
+        decoding_machine.decode_character("7")
+        assert False, "Should have raised a ValueError for a non-alphabetical character."
+    except ValueError:
+        pass
+
+    print("Test 7 passed showing that decode_character will not accept non-alphabetical characters.")
+
     print("All EnhancedEnigmaMachine tests have been passed!")
 
     # Analysis of the key space for the standard EnigmaMachine vs the EnhancedEnigmaMachine     
