@@ -310,6 +310,6 @@ if __name__ == "__main__":
 
 #References
 # Thimbleby, H., 2016. Human factors and missed solutions to Enigma design weaknesses. Cryptologia, 40(2), pp.177-202.
-# Knuth, D.E., 1998. The art of computer programming, vol. 3: sorting and searching. 2nd ed. Reading, Mass.: Addison Wesley Longman.
+# Knuth, D.E., 1998. The art of computer programming, vol. 3: sorting and searching. 2nd ed. Reading, Mass.: Addison-Wesley Longman.
 # Graham, R.L., Knuth, D.E. and Patashnik, O., 1994. Concrete mathematics: a foundation for computer science. 2nd ed. Reading, Mass.: Addison-Wesley Longman.
          
