@@ -4,6 +4,10 @@
         "automarker",
         "CUTOFF",
         "Dechter",
-        "Kohavi"
+        "Kohavi",
+        "Nigam",
+        "nonoccurence",
+        "nonoccurrence",
+        "Raghavan"
     ]
 }
